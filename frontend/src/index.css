@@ -33,6 +33,7 @@
 @layer base {
   body {
     @apply bg-page-bg text-text-primary font-sans;
+    font-family: 'Inter', sans-serif;
   }
 }
 
@@ -56,7 +57,7 @@
     padding-right: 1rem;
   }
 
-  @screen sm {
+  @media (min-width: 640px) {
     .container {
       padding-left: 2rem;
       padding-right: 2rem;
@@ -87,6 +88,57 @@
     font-size: var(--text-body);
     font-weight: 400;
     line-height: 1.25rem;
+  }
+
+  /* Landing page specific styles */
+  .tab-active { 
+    position: relative; 
+  }
+  
+  .tab-active:after { 
+    content: '';
+    position: absolute; 
+    left: 50%; 
+    transform: translateX(-50%);
+    bottom: -6px; 
+    width: 100%; 
+    height: 3px;
+    background: #d84e55; 
+    border-radius: 2px;
+  }
+  
+  .toggle-btn { 
+    transition: background .2s;
+  }
+  
+  .toggle-btn[aria-checked="true"] { 
+    background: #d84e55;
+  }
+  
+  .toggle-slider { 
+    transition: transform .2s;
+  }
+  
+  .toggle-btn[aria-checked="true"] .toggle-slider {
+    background: #fff;
+    transform: translateX(22px);
+  }
+  
+  .toggle-slider { 
+    background: #555;
+  }
+
+  /* FAQ styles */
+  .faq-answer {
+    transition: all 0.3s ease;
+  }
+
+  .faq-answer.hidden {
+    display: none;
+  }
+
+  .fa-chevron-down.rotate-180 {
+    transform: rotate(180deg);
   }
 }
 
