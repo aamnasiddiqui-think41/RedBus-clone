@@ -13,3 +13,24 @@ yarn-error.log*
 # Build output
 dist/
 build/
+
+
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+env/
+venv/
+
+# Alembic cache
+migrations/versions/__pycache__/
+
+# IDE/editor settings
+.vscode/
+.idea/
+*.swp
