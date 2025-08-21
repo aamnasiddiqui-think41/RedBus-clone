@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LoginForm } from '../components/auth/LoginForm';
 import { OTPForm } from '../components/auth/OTPForm';
+import { Navbar } from '../components/shared/Navbar';
 import { useStore } from '../store/store';
 
 export const LoginPage = () => {
@@ -13,7 +14,7 @@ export const LoginPage = () => {
 
   useEffect(() => {
     if (token) {
-      navigate('/my-details/bookings');
+      navigate('/');
     }
   }, [token, navigate]);
 
@@ -26,18 +27,21 @@ export const LoginPage = () => {
     await verifyOtp(phone, otp);
     const { error } = useStore.getState();
     if (!error) {
-        navigate('/my-details/bookings');
+        navigate('/');
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="p-6 bg-white rounded-lg shadow-lg w-full max-w-md">
-        {!isOtpSent ? (
-          <LoginForm onLogin={handleOtpSent} />
-        ) : (
-          <OTPForm onVerify={handleVerifyOtp} />
-        )}
+    <div className="bg-gray-100 min-h-screen">
+      <Navbar showNavigation={false} />
+      <div className="flex items-center justify-center min-h-screen bg-gray-100 pt-16">
+        <div className="p-6 bg-white rounded-lg shadow-lg w-full max-w-md">
+          {!isOtpSent ? (
+            <LoginForm onLogin={handleOtpSent} />
+          ) : (
+            <OTPForm onVerify={handleVerifyOtp} />
+          )}
+        </div>
       </div>
     </div>
   );

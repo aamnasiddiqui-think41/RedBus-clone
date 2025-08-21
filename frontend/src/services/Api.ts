@@ -68,9 +68,9 @@ export interface UpdateMeRequest {
 }
 
 export interface SearchBusesRequest {
-  source: string;
-  destination: string;
-  date: string;
+  from_city_id: string;
+  to_city_id: string;
+  date?: string; // Make date optional as per API documentation
 }
 
 export interface BookRequest {

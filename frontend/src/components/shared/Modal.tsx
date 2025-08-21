@@ -12,14 +12,16 @@ export const Modal = ({ isOpen, onClose, children }: ModalProps) => {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+      className="fixed top-16 left-0 right-0 bottom-0 z-50 bg-white"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md"
+        className="w-full h-full flex items-center justify-center"
         onClick={(e) => e.stopPropagation()}
       >
-        {children}
+        <div className="p-8 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+          {children}
+        </div>
       </div>
     </div>
   );

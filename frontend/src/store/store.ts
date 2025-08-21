@@ -12,6 +12,7 @@ interface AppState {
   myBookings: Api.Booking[];
   loading: boolean;
   error: string | null;
+  searchParams: { from: string; to: string; date: string } | null;
 
   // Auth
   requestOtp: (phone: string) => Promise<void>;
@@ -29,6 +30,7 @@ interface AppState {
   // Booking process
   selectBus: (bus: Api.Bus) => void;
   createBooking: (data: Api.BookRequest) => Promise<void>;
+  setSearchParams: (params: { from: string; to: string; date: string }) => void;
 }
 
 export const useStore = create<AppState>((set, get) => ({
@@ -42,6 +44,7 @@ export const useStore = create<AppState>((set, get) => ({
   myBookings: [],
   loading: false,
   error: null,
+  searchParams: null,
 
   // --- ACTIONS ---
 
@@ -166,5 +169,9 @@ export const useStore = create<AppState>((set, get) => ({
     } finally {
       set({ loading: false });
     }
+  },
+
+  setSearchParams: (params) => {
+    set({ searchParams: params });
   },
 }));
