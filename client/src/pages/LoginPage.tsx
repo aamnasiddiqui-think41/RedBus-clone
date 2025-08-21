@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LoginForm } from '../components/auth/LoginForm';
@@ -7,10 +6,9 @@ import { Navbar } from '../components/shared/Navbar';
 import { useStore } from '../store/store';
 
 export const LoginPage = () => {
-  const { token, verifyOtp } = useStore();
+  const { token, requestOtp, verifyOtp } = useStore();
   const navigate = useNavigate();
   const [isOtpSent, setIsOtpSent] = useState(false);
-  const [phone, setPhone] = useState('');
 
   useEffect(() => {
     if (token) {
@@ -18,13 +16,16 @@ export const LoginPage = () => {
     }
   }, [token, navigate]);
 
-  const handleOtpSent = (phone: string) => {
-    setPhone(phone);
-    setIsOtpSent(true);
+  const handleOtpSent = async (country_code: string, phone_number: string) => {
+    await requestOtp(country_code, phone_number);
+    const { error } = useStore.getState();
+    if (!error) {
+      setIsOtpSent(true);
+    }
   };
 
   const handleVerifyOtp = async (otp: string) => {
-    await verifyOtp(phone, otp);
+    await verifyOtp(otp);
     const { error } = useStore.getState();
     if (!error) {
         navigate('/');

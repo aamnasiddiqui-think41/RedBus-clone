@@ -4,6 +4,7 @@ import * as Api from '../services/Api';
 interface AppState {
   user: Api.User | null;
   token: string | null;
+  otp_id: string | null; // Add otp_id to state
   cities: Api.City[];
   buses: Api.Bus[];
   selectedBus: Api.Bus | null;
@@ -15,8 +16,8 @@ interface AppState {
   searchParams: { from: string; to: string; date: string } | null;
 
   // Auth
-  requestOtp: (phone: string) => Promise<void>;
-  verifyOtp: (phone: string, otp: string) => Promise<void>;
+  requestOtp: (country_code: string, phone: string) => Promise<void>; // Update signature
+  verifyOtp: (otp: string) => Promise<void>; // Update signature
   logout: () => void;
   getMe: (token: string) => Promise<void>;
   updateMe: (token: string, data: Api.UpdateMeRequest) => Promise<void>;
@@ -36,6 +37,7 @@ interface AppState {
 export const useStore = create<AppState>((set, get) => ({
   user: null,
   token: localStorage.getItem('token'),
+  otp_id: null, // Initialize otp_id
   cities: [],
   buses: [],
   selectedBus: null,
@@ -49,10 +51,11 @@ export const useStore = create<AppState>((set, get) => ({
   // --- ACTIONS ---
 
   // Auth
-  requestOtp: async (phone) => {
+  requestOtp: async (country_code, phone) => {
     set({ loading: true, error: null });
     try {
-      await Api.api.requestOtp({ phone });
+      const { otp_id } = await Api.api.requestOtp({ country_code, phone });
+      set({ otp_id });
     } catch (error: any) {
       set({ error: error.message });
     } finally {
@@ -60,11 +63,16 @@ export const useStore = create<AppState>((set, get) => ({
     }
   },
 
-  verifyOtp: async (phone, otp) => {
+  verifyOtp: async (otp) => {
+    const otp_id = get().otp_id;
+    if (!otp_id) {
+      set({ error: "OTP not requested" });
+      return;
+    }
     set({ loading: true, error: null });
     try {
-      const { token, user } = await Api.api.verifyOtp({ phone, otp });
-      set({ token, user });
+      const { token, user } = await Api.api.verifyOtp({ otp_id, otp });
+      set({ token, user, otp_id: null }); // Clear otp_id after verification
       localStorage.setItem('token', token);
     } catch (error: any) {
       set({ error: error.message });
@@ -74,7 +82,7 @@ export const useStore = create<AppState>((set, get) => ({
   },
 
   logout: () => {
-    set({ user: null, token: null });
+    set({ user: null, token: null, otp_id: null });
     localStorage.removeItem('token');
   },
 
@@ -84,7 +92,8 @@ export const useStore = create<AppState>((set, get) => ({
       const user = await Api.api.getMe(token);
       set({ user });
     } catch (error: any) {
-      set({ error: error.message });
+      set({ error: error.message, token: null }); // Clear token on auth error
+      localStorage.removeItem('token');
     } finally {
       set({ loading: false });
     }
@@ -175,3 +184,9 @@ export const useStore = create<AppState>((set, get) => ({
     set({ searchParams: params });
   },
 }));
+
+// Auto-fetch user if token exists
+const token = localStorage.getItem('token');
+if (token) {
+  useStore.getState().getMe(token);
+}

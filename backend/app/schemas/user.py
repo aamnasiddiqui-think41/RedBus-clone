@@ -1,0 +1,25 @@
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
+from typing import Optional
+from datetime import date
+import uuid
+
+class UserBase(BaseModel):
+    phone: str = Field(..., json_schema_extra={"example": "9876543210"})
+    country_code: str = Field("+91", json_schema_extra={"example": "+91"})
+    name: Optional[str] = Field(None, json_schema_extra={"example": "John Doe"})
+    email: Optional[EmailStr] = Field(None, json_schema_extra={"example": "john.doe@example.com"})
+    gender: Optional[str] = Field(None, json_schema_extra={"example": "Male"})
+    dob: Optional[date] = Field(None, json_schema_extra={"example": "1994-05-12"})
+
+class UserCreate(UserBase):
+    pass
+
+class UserUpdate(BaseModel):
+    name: Optional[str] = Field(None, json_schema_extra={"example": "Johnathan Doe"})
+    email: Optional[EmailStr] = Field(None, json_schema_extra={"example": "john.doe@gmail.com"})
+    gender: Optional[str] = Field(None, json_schema_extra={"example": "Male"})
+    dob: Optional[date] = Field(None, json_schema_extra={"example": "1994-05-12"})
+
+class UserResponse(UserBase):
+    id: uuid.UUID
+    model_config = ConfigDict(from_attributes=True)

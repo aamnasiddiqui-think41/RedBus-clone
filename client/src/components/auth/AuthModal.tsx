@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Modal } from '../shared/Modal';
 import { LoginForm } from './LoginForm';
@@ -12,19 +11,23 @@ interface AuthModalProps {
 
 export const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
   const [isOtpSent, setIsOtpSent] = useState(false);
-  const [phone, setPhone] = useState('');
   const requestOtp = useStore((state) => state.requestOtp);
   const verifyOtp = useStore((state) => state.verifyOtp);
 
-  const handleLogin = async (phoneNumber: string) => {
-    setPhone(phoneNumber);
-    await requestOtp(phoneNumber);
-    setIsOtpSent(true);
+  const handleLogin = async (country_code: string, phone: string) => {
+    await requestOtp(country_code, phone);
+    const { error } = useStore.getState();
+    if (!error) {
+      setIsOtpSent(true);
+    }
   };
 
   const handleVerify = async (otp: string) => {
-    await verifyOtp(phone, otp);
-    onClose();
+    await verifyOtp(otp);
+    const { error } = useStore.getState();
+    if (!error) {
+      onClose();
+    }
   };
 
   return (

@@ -1,5 +1,3 @@
-
-
 // --- Common Types ---
 
 export interface User {
@@ -54,11 +52,12 @@ export interface Booking {
 // --- API Request Types ---
 
 export interface RequestOtpRequest {
+  country_code: string;
   phone: string;
 }
 
 export interface VerifyOtpRequest {
-  phone: string;
+  otp_id: string;
   otp: string;
 }
 
@@ -84,8 +83,9 @@ export interface BookRequest {
 // --- API Response Types ---
 
 export interface RequestOtpResponse {
+  success: boolean;
   message: string;
-  otp: string; // Mock only
+  otp_id: string;
 }
 
 export interface VerifyOtpResponse {
