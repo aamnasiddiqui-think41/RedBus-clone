@@ -7,7 +7,7 @@ import type { Bus } from '../services/Api';
 
 export const LandingPage = () => {
   const navigate = useNavigate();
-  const { cities, fetchCities, searchBuses, selectBus } = useStore();
+  const { cities, fetchCities, searchBuses, selectBus, setSearchParams } = useStore();
   const [fromCity, setFromCity] = useState('');
   const [toCity, setToCity] = useState('');
   const [date, setDate] = useState('');
@@ -31,6 +31,14 @@ export const LandingPage = () => {
         searchData.date = date;
       }
       
+      // Store search params for seat selection page
+      setSearchParams({ from: fromCity, to: toCity, date: date || '' });
+      
+      // Debug: Log the search data
+      console.log('LandingPage: Searching buses with data:', searchData);
+      console.log('LandingPage: From city ID:', fromCity);
+      console.log('LandingPage: To city ID:', toCity);
+      
       searchBuses(searchData);
       setShowResults(true);
     }
@@ -38,7 +46,12 @@ export const LandingPage = () => {
 
   const handleSelectBus = (bus: Bus) => {
     selectBus(bus);
-    navigate(`/bus/${bus.id}/seats`);
+    // Pass the travel date to the seat selection page
+    navigate(`/bus/${bus.id}/seats`, { 
+      state: { 
+        travelDate: date || new Date().toISOString().split('T')[0] // Use selected date or today
+      } 
+    });
   };
 
   const setToday = () => {

@@ -14,9 +14,10 @@ export const SeatSelectionPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { createBooking, selectedBus, selectBus, buses, token } = useStore();
+  const { createBooking, selectedBus, selectBus, buses, token, searchParams } = useStore();
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
   const [isBookingSuccessModalOpen, setIsBookingSuccessModalOpen] = useState(false);
+  const [travelDate, setTravelDate] = useState<string>('');
 
   useEffect(() => {
     if (!selectedBus && busId) {
@@ -31,6 +32,29 @@ export const SeatSelectionPage = () => {
     }
   }, [selectedBus, busId, buses, selectBus, location.state]);
 
+  // Get travel date from search params or location state
+  useEffect(() => {
+    console.log('=== SEAT SELECTION PAGE DEBUG ===');
+    console.log('Search params:', searchParams);
+    console.log('Location state:', location.state);
+    
+    if (searchParams?.date) {
+      console.log('Setting travel date from search params:', searchParams.date);
+      setTravelDate(searchParams.date);
+    } else if (location.state?.travelDate) {
+      console.log('Setting travel date from location state:', location.state.travelDate);
+      setTravelDate(location.state.travelDate);
+    } else {
+      console.log('No travel date found, using default');
+      setTravelDate('2025-09-01'); // Set a default date
+    }
+  }, [searchParams, location.state]);
+
+  // Debug: Log when travelDate changes
+  useEffect(() => {
+    console.log('Travel date changed to:', travelDate);
+  }, [travelDate]);
+
   const handleConfirmBooking = async () => {
     if (!token) {
       alert('You must be logged in to book tickets.');
@@ -41,7 +65,7 @@ export const SeatSelectionPage = () => {
       try {
         await createBooking({
           bus_id: selectedBus.id,
-          date: '2025-09-01', // This should come from the search query
+          date: travelDate || '2025-09-01', // Use actual travel date
           seats: selectedSeats,
           passenger_details: [], // This should be collected from the user
           contact: { phone: '', email: '' }, // This should be collected from the user
@@ -72,7 +96,7 @@ export const SeatSelectionPage = () => {
       <div className="p-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="md:col-span-2">
-            <SeatLayout busId={busId} onSeatsSelected={setSelectedSeats} />
+            <SeatLayout busId={busId} travelDate={travelDate} onSeatsSelected={setSelectedSeats} />
           </div>
           <div>
             <BookingSummary selectedSeats={selectedSeats} onConfirmBooking={handleConfirmBooking} />

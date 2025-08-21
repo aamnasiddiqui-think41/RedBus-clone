@@ -13,6 +13,7 @@ interface AppState {
   loading: boolean;
   error: string | null;
   searchParams: { from: string; to: string; date: string } | null;
+  searchMessage: string | null;  // Add this for bus search messages
 
   // Auth
   requestOtp: (phone: string) => Promise<void>;
@@ -24,7 +25,7 @@ interface AppState {
   // Data fetching
   fetchCities: () => Promise<void>;
   searchBuses: (data: Api.SearchBusesRequest) => Promise<void>;
-  fetchBusSeats: (busId: string) => Promise<void>;
+  fetchBusSeats: (busId: string, travelDate?: string) => Promise<void>;
   fetchBookings: () => Promise<void>;
 
   // Booking process
@@ -45,6 +46,7 @@ export const useStore = create<AppState>((set, get) => ({
   loading: false,
   error: null,
   searchParams: null,
+  searchMessage: null,
 
   // --- ACTIONS ---
 
@@ -106,9 +108,12 @@ export const useStore = create<AppState>((set, get) => ({
   fetchCities: async () => {
     set({ loading: true, error: null });
     try {
+      console.log('Store: Fetching cities...');
       const { cities } = await Api.api.getCities();
+      console.log('Store: Cities fetched successfully:', cities);
       set({ cities });
     } catch (error: any) {
+      console.error('Store: Error fetching cities:', error);
       set({ error: error.message });
     } finally {
       set({ loading: false });
@@ -118,22 +123,44 @@ export const useStore = create<AppState>((set, get) => ({
   searchBuses: async (data) => {
     set({ loading: true, error: null });
     try {
-      const { buses } = await Api.api.searchBuses(data);
-      set({ buses });
+      console.log('Store: Searching buses with data:', data);
+      const { buses, message } = await Api.api.searchBuses(data);
+      console.log('Store: Buses found:', buses);
+      set({ buses, searchMessage: message });
     } catch (error: any) {
+      console.error('Store: Error searching buses:', error);
       set({ error: error.message });
     } finally {
       set({ loading: false });
     }
   },
 
-  fetchBusSeats: async (busId) => {
+  fetchBusSeats: async (busId: string, travelDate?: string) => {
     set({ loading: true, error: null });
     try {
-      const { seats } = await Api.api.getBusSeats(busId);
-      set({ seats });
+      console.log('Store: Fetching bus seats for bus:', busId, 'date:', travelDate);
+      const response = await Api.api.getBusSeats(busId, travelDate);
+      console.log('Store: Bus seats response:', response);
+      
+      if (response && response.seats) {
+        console.log('Store: Setting seats in store:', response.seats);
+        console.log('Store: Number of seats:', response.seats.length);
+        console.log('Store: First seat sample:', response.seats[0]);
+        set({ seats: response.seats });
+        
+        // Verify the seats were set
+        setTimeout(() => {
+          const currentState = get();
+          console.log('Store: Current seats after set:', currentState.seats);
+          console.log('Store: Current seats length:', currentState.seats.length);
+        }, 100);
+      } else {
+        console.error('Store: Invalid response format:', response);
+        set({ seats: [], error: 'Invalid response format from server' });
+      }
     } catch (error: any) {
-      set({ error: error.message });
+      console.error('Store: Error fetching bus seats:', error);
+      set({ error: error.message, seats: [] });
     } finally {
       set({ loading: false });
     }
@@ -155,7 +182,7 @@ export const useStore = create<AppState>((set, get) => ({
 
   // Booking process
   selectBus: (bus) => {
-    set({ selectedBus: bus, seats: [] }); // Reset seats when selecting a new bus
+    set({ selectedBus: bus }); // Don't reset seats - let them be fetched separately
   },
 
   createBooking: async (data) => {

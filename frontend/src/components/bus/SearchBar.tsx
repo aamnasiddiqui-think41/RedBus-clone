@@ -13,6 +13,11 @@ export const SearchBar = () => {
     fetchCities();
   }, [fetchCities]);
 
+  // Debug: Log cities when they change
+  useEffect(() => {
+    console.log('Cities loaded:', cities);
+  }, [cities]);
+
   // Pre-fill search form with parameters from landing page
   useEffect(() => {
     if (searchParams) {
@@ -51,6 +56,8 @@ export const SearchBar = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Debug: Log the search data being sent
     const searchData: any = {
       from_city_id: fromCity,
       to_city_id: toCity
@@ -61,6 +68,10 @@ export const SearchBar = () => {
       searchData.date = date;
     }
     
+    console.log('Searching buses with data:', searchData);
+    console.log('Selected from city ID:', fromCity);
+    console.log('Selected to city ID:', toCity);
+    
     searchBuses(searchData);
   };
 
@@ -69,13 +80,17 @@ export const SearchBar = () => {
       <Select value={fromCity} onChange={(e) => setFromCity(e.target.value)} required>
         <option value="" disabled>From</option>
         {cities.map((city) => (
-          <option key={city.id} value={city.id}>{city.name}</option>
+          <option key={city.id} value={city.id}>
+            {city.name} ({city.id})
+          </option>
         ))}
       </Select>
       <Select value={toCity} onChange={(e) => setToCity(e.target.value)} required>
         <option value="" disabled>To</option>
         {cities.map((city) => (
-          <option key={city.id} value={city.id}>{city.name}</option>
+          <option key={city.id} value={city.id}>
+            {city.name} ({city.id})
+          </option>
         ))}
       </Select>
       <TextInput type="date" value={date} onChange={(e) => setDate(e.target.value)} />

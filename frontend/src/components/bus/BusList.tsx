@@ -11,18 +11,30 @@ interface BusListProps {
 }
 
 export const BusList = ({ onSelectBus }: BusListProps) => {
-  const { buses, loading, error } = useStore();
+  const { buses, loading, error, searchMessage } = useStore();
 
   if (loading) return <Loader />;
   if (error) return <div>Error: {error}</div>;
-  if (!buses || buses.length === 0) return <EmptyState>No buses found for this route.</EmptyState>;
-
+  
   return (
     <div className="space-y-4">
-      {buses.map((bus) => (
-
-<BusCard key={bus.id} bus={bus} onSelectBus={onSelectBus} />
-      ))}
+      {/* Show search message if available */}
+      {searchMessage && (
+        <div className="text-center p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-blue-800 font-medium">{searchMessage}</p>
+        </div>
+      )}
+      
+      {/* Show buses or empty state */}
+      {!buses || buses.length === 0 ? (
+        <EmptyState>
+          {searchMessage || "No buses found for this route."}
+        </EmptyState>
+      ) : (
+        buses.map((bus) => (
+          <BusCard key={bus.id} bus={bus} onSelectBus={onSelectBus} />
+        ))
+      )}
     </div>
   );
 };

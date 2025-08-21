@@ -27,10 +27,11 @@ export interface Bus {
 }
 
 export interface Seat {
+  id: string;
   seat_no: string;
-  available: boolean;
+  seat_type: string;
   price: number;
-  type: string;
+  is_available: boolean;
 }
 
 export interface Passenger {
@@ -103,6 +104,7 @@ export interface GetCitiesResponse {
 
 export interface SearchBusesResponse {
   buses: Bus[];
+  message: string;
 }
 
 export interface GetBusSeatsResponse {
@@ -116,6 +118,7 @@ export interface BookResponse {
   status: 'CONFIRMED' | 'CANCELLED';
   seats: string[];
   total_amount: number;
+  date: string;  // Add the missing date field
 }
 
 export interface GetBookingsResponse {
@@ -126,7 +129,10 @@ const API_BASE_URL = '/api';
 
 class ApiService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const url = `${API_BASE_URL}${endpoint}`;
+    console.log('API: Making request to:', url, 'with options:', options);
+    
+    const response = await fetch(url, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
@@ -134,12 +140,18 @@ class ApiService {
       },
     });
 
+    console.log('API: Response status:', response.status);
+    console.log('API: Response headers:', response.headers);
+
     if (!response.ok) {
       const error = await response.json();
+      console.error('API: Error response:', error);
       throw new Error(error.message || 'Something went wrong');
     }
 
-    return response.json();
+    const data = await response.json();
+    console.log('API: Success response:', data);
+    return data;
   }
 
   // --- Auth ---
@@ -170,12 +182,18 @@ class ApiService {
     return this.request('/search-buses', { method: 'POST', body: JSON.stringify(data) });
   }
 
-  getBusSeats(busId: string): Promise<GetBusSeatsResponse> {
-    return this.request(`/bus/${busId}/seats`);
+  getBusSeats(busId: string, travelDate?: string): Promise<GetBusSeatsResponse> {
+    const url = travelDate 
+      ? `/bus/${busId}/seats?travel_date=${travelDate}`
+      : `/bus/${busId}/seats`;
+    return this.request(url);
   }
 
   book(data: BookRequest, token?: string): Promise<BookResponse> {
-    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
     return this.request('/book', { method: 'POST', headers, body: JSON.stringify(data) });
   }
 

@@ -19,8 +19,8 @@ export const PersonalInfoForm = () => {
 
   useEffect(() => {
     if (user) {
-      setName(user.name);
-      setEmail(user.email);
+      setName(user.name || '');
+      setEmail(user.email || '');
     }
   }, [user]);
 

@@ -38,7 +38,12 @@ export const LandingPage = () => {
 
   const handleSelectBus = (bus: Bus) => {
     selectBus(bus);
-    navigate(`/bus/${bus.id}/seats`);
+    // Pass the travel date to the seat selection page
+    navigate(`/bus/${bus.id}/seats`, { 
+      state: { 
+        travelDate: date || new Date().toISOString().split('T')[0] // Use selected date or today
+      } 
+    });
   };
 
   const setToday = () => {

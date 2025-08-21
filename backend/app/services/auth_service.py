@@ -55,18 +55,31 @@ class AuthService:
             return None # Invalid code
 
         # 4. Find or create user
+        print(f"--- 4. Looking for user with phone: {otp_record.phone} ---")
         user = self.db.query(User).filter(User.phone == otp_record.phone).first()
+        
         if not user:
+            print(f"--- 4a. User not found, CREATING NEW USER ---")
             user = User(phone=otp_record.phone)
             self.db.add(user)
             self.db.commit()
             self.db.refresh(user)
+            print(f"--- 4b. New user created with ID: {user.id} ---")
+        else:
+            print(f"--- 4a. EXISTING USER FOUND with ID: {user.id} ---")
+            print(f"--- 4b. User name: {user.name}, email: {user.email} ---")
 
         # 5. Generate JWT token
         access_token = create_access_token(data={"sub": str(user.id)})
+        print(f"--- 5. JWT token generated for user ID: {user.id} ---")
 
         # 6. Clean up OTP (mark as used or delete) - DISABLED FOR DEBUGGING
         # self.db.delete(otp_record)
         # self.db.commit()
 
+        print(f"--- 6. Returning token and user data ---")
+        print(f"--- 6a. User ID: {user.id} ---")
+        print(f"--- 6b. User phone: {user.phone} ---")
+        print(f"--- 6c. Token generated: {access_token[:20]}... ---")
+        
         return {"token": access_token, "user": user}
