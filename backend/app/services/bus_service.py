@@ -6,6 +6,7 @@ from app.db.models.city import City
 from app.db.models.seat import Seat
 from app.db.models.booking import Booking
 from app.db.models.booking_seat import BookingSeat
+from app.db.models.trip import Trip
 from datetime import date
 import uuid
 
@@ -19,10 +20,18 @@ class BusService:
         """
         try:
             # Query buses from database based on from_city_id and to_city_id
-            buses = self.db.query(Bus).filter(
+            query = self.db.query(Bus).filter(
                 Bus.from_city_id == search_request.from_city_id,
                 Bus.to_city_id == search_request.to_city_id
-            ).all()
+            )
+            
+            # If date is provided, only show buses that have trips on that date
+            if search_request.actual_date:
+                query = query.join(Trip, Trip.bus_id == Bus.id).filter(
+                    Trip.service_date == search_request.actual_date
+                )
+            
+            buses = query.all()
             
             # Convert to response format
             filtered_buses = []

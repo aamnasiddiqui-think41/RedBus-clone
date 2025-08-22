@@ -8,15 +8,15 @@ class PassengerDetail(BaseModel):
     gender: str = Field(..., json_schema_extra={"example": "Male"})
 
 class ContactInfo(BaseModel):
-    phone: str = Field(..., json_schema_extra={"example": "+919876543210"})
-    email: str = Field(..., json_schema_extra={"example": "john@example.com"})
+    phone: Optional[str] = Field(default="", json_schema_extra={"example": "+919876543210"})
+    email: Optional[str] = Field(default="", json_schema_extra={"example": "john@example.com"})
 
 class BookingCreate(BaseModel):
     bus_id: str = Field(..., json_schema_extra={"example": "BUS101"})
     travel_date: date = Field(..., json_schema_extra={"example": "2025-09-01"})
     seats: List[str] = Field(..., json_schema_extra={"example": ["A1", "B1"]})
-    passenger_details: List[PassengerDetail] = Field(..., json_schema_extra={"example": []})
-    contact: ContactInfo = Field(..., json_schema_extra={"example": {"phone": "", "email": ""}})
+    passenger_details: Optional[List[PassengerDetail]] = Field(default=[], json_schema_extra={"example": []})
+    contact: Optional[ContactInfo] = Field(default=None, json_schema_extra={"example": {"phone": "", "email": ""}})
     payment_mode: Optional[str] = Field(None, json_schema_extra={"example": "CARD"})
 
 class BookingResponse(BaseModel):

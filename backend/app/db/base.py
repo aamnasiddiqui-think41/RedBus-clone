@@ -15,5 +15,6 @@ from app.db.models import bus  # noqa
 from app.db.models import seat  # noqa
 from app.db.models import booking  # noqa
 from app.db.models import booking_seat  # noqa
+from app.db.models import trip  # noqa
 
 print("✅ base.py loaded, models imported:", Base.metadata.tables.keys())

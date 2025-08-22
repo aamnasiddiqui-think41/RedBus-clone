@@ -9,6 +9,7 @@ from app.db.models.bus import Bus
 from app.db.models.city import City
 import uuid
 from datetime import datetime
+from loguru import logger
 
 class BookingService:
     def __init__(self, db: Session):
@@ -19,11 +20,16 @@ class BookingService:
         Create a new real booking in the database
         """
         try:
-            print(f"=== CREATING REAL BOOKING ===")
-            print(f"User: {user.id}")
-            print(f"Bus: {booking_data.bus_id}")
-            print(f"Seats: {booking_data.seats}")
-            print(f"Travel Date: {booking_data.travel_date}")
+            logger.info("Creating booking for user_id={user_id} bus_id={bus_id} seats={seats} travel_date={travel_date}", 
+                       user_id=user.id, bus_id=booking_data.bus_id, seats=booking_data.seats, travel_date=booking_data.travel_date)
+            
+            # Validate required data
+            if not booking_data.seats:
+                raise ValueError("No seats selected")
+            if not booking_data.bus_id:
+                raise ValueError("Bus ID is required")
+            if not booking_data.travel_date:
+                raise ValueError("Travel date is required")
             
             # Get bus details - convert string ID to UUID
             try:
@@ -55,7 +61,7 @@ class BookingService:
             new_booking = Booking(
                 id=uuid.uuid4(),
                 user_id=user.id,
-                bus_id=booking_data.bus_id,
+                bus_id=bus_uuid,
                 date=booking_data.travel_date,
                 status="CONFIRMED",
                 amount=total_amount
@@ -80,16 +86,14 @@ class BookingService:
                     )
                     self.db.add(booking_seat)
                     
-                    # Update seat availability to False
-                    seat.is_available = False
-                    print(f"Marked seat {seat_no} as unavailable")
+                    # Note: Seat availability is determined by BookingSeat records, not a flag
+                    print(f"Marked seat {seat_no} as booked")
             
             # Commit all changes
             self.db.commit()
             
-            print(f"=== BOOKING CREATED SUCCESSFULLY ===")
-            print(f"Booking ID: {new_booking.id}")
-            print(f"Total Amount: {total_amount}")
+            logger.info("Booking created successfully booking_id={booking_id} total_amount={amount}", 
+                       booking_id=new_booking.id, amount=total_amount)
             
             # Return the booking response
             return {
@@ -105,9 +109,9 @@ class BookingService:
             }
             
         except Exception as e:
+            logger.error("Error creating booking: {error}", error=str(e))
             self.db.rollback()
-            print(f"Error creating booking: {e}")
-            raise e
+            raise
     
     def get_user_bookings(self, user: User) -> List[Dict[str, Any]]:
         """

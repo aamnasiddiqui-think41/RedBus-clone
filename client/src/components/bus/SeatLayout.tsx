@@ -129,70 +129,11 @@ export const SeatLayout = ({ busId, travelDate, onSeatsSelected }: SeatLayoutPro
 
   return (
     <div className="space-y-4">
-      {/* Manual refresh button */}
-      <div className="mb-4 flex justify-between items-center">
+      <div className="mb-4">
         <h2 className="text-2xl font-bold text-gray-800">Select Your Seats</h2>
-        <div className="flex items-center gap-3">
-          {/* Auto-refresh toggle */}
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-700">Auto-refresh:</label>
-            <button
-              onClick={toggleAutoRefresh}
-              className={`px-3 py-1 text-xs rounded transition-colors ${
-                autoRefreshEnabled 
-                  ? 'bg-green-500 text-white hover:bg-green-600' 
-                  : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
-              }`}
-              title="Toggle automatic seat availability updates"
-            >
-              {autoRefreshEnabled ? 'ON' : 'OFF'}
-            </button>
-            {autoRefreshEnabled && (
-              <span className="text-xs text-green-600">Every 30s</span>
-            )}
-          </div>
-          
-          {/* Info text */}
-          <div className="text-xs text-gray-500">
-            Auto-refresh keeps seat availability up-to-date
-          </div>
-          
-          {/* Manual refresh button */}
-          <button
-            onClick={refreshSeats}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
-          >
-            <span>🔄</span>
-            Refresh Seats
-          </button>
-        </div>
       </div>
 
-      {/* Refresh Status */}
-      <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-        <div className="flex items-center justify-between text-sm text-gray-600">
-          <div>
-            <span className="font-medium">Last refresh:</span>
-            <span className="ml-2">
-              {lastRefreshTime 
-                ? lastRefreshTime.toLocaleTimeString() 
-                : 'Never'
-              }
-            </span>
-          </div>
-          {autoRefreshEnabled && (
-            <div>
-              <span className="font-medium">Next auto-refresh:</span>
-              <span className="ml-2">
-                {lastRefreshTime 
-                  ? new Date(lastRefreshTime.getTime() + 30000).toLocaleTimeString()
-                  : 'In 30s'
-                }
-              </span>
-            </div>
-          )}
-        </div>
-      </div>
+      {/* Removed auto-refresh status UI */}
 
       {/* Error display */}
       <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
@@ -203,38 +144,7 @@ export const SeatLayout = ({ busId, travelDate, onSeatsSelected }: SeatLayoutPro
         <p className="text-blue-600 text-sm">Click on available seats to select them</p>
       </div>
       
-      {/* Manual refresh button */}
-      <button 
-        onClick={() => {
-          fetchBusSeats(busId, travelDate);
-        }}
-        disabled={loading}
-        className={`mt-2 px-3 py-1 text-white text-xs rounded ${
-          loading 
-            ? 'bg-gray-400 cursor-not-allowed' 
-            : 'bg-blue-500 hover:bg-blue-600'
-        }`}
-      >
-        {loading ? '⏳ Refreshing...' : '🔄 Refresh Seats'}
-      </button>
-
-      {/* Reset Booking State button */}
-      <button 
-        onClick={resetBookingState}
-        className="mt-2 ml-2 px-3 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600"
-      >
-        Reset Booking State
-      </button>
-
-      {/* Start New Booking Session button */}
-      {selectedBus && (
-        <button 
-          onClick={() => startNewBookingSession(selectedBus)}
-          className="mt-2 ml-2 px-3 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600"
-        >
-          Start New Session
-        </button>
-      )}
+      {/* Removed debug-only buttons: Refresh Seats, Reset Booking State, Start New Session */}
 
       {/* Clear Selected Seats button */}
       {selectedSeats.length > 0 && (

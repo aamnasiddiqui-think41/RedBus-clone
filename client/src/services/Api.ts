@@ -169,9 +169,14 @@ class ApiService {
       console.log('Response headers:', Object.fromEntries(response.headers.entries()));
 
       if (!response.ok) {
-        const error = await response.json();
-        console.log('Error response:', error);
-        throw new Error(error.message || 'Something went wrong');
+        try {
+          const error = await response.json();
+          console.log('Error response:', error);
+          throw new Error(error.detail || error.message || `HTTP ${response.status}: ${response.statusText}`);
+        } catch (parseError) {
+          console.log('Failed to parse error response:', parseError);
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
       }
 
       const data = await response.json();
