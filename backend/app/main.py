@@ -1,25 +1,38 @@
-# app/main.py
-
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from app.routes import user_routes, auth_routes, city_routes, bus_routes, booking_routes
 from app.db.session import init_db
-from sqlalchemy import text
-from app.db.session import engine
+from contextlib import asynccontextmanager
+from app.core.logging import logger
 
-app = FastAPI(title="RedBus Clone API", version="1.0.0")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # on startup
+    try:
+        init_db()
+        logger.info("Database initialized successfully")
+    except Exception as e:
+        logger.exception("Database initialization failed: {error}", error=e)
+        logger.warning("Server will continue with mock data")
+    yield
+    # on shutdown
+    logger.info("Shutting down application")
 
-@app.on_event("startup")
-async def on_startup():
-    # In dev, this will create tables for any imported models.
-    # In prod, you'll use Alembic migrations instead.
-    init_db()
+app = FastAPI(title="Bus Booking API", lifespan=lifespan)
 
-@app.get("/")
-def health_check():
-    return {"status": "ok", "message": "RedBus Clone API is running"}
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://localhost:5174", "http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# Optional: DB ping endpoint (remove in prod)
-@app.get("/__db/ping")
-def db_ping():
-    with engine.connect() as conn:
-        result = conn.execute(text("SELECT 1")).scalar_one()
-        return {"db": "ok", "select_1": result}
+logger.info("Registering routers")
+app.include_router(auth_routes.router)
+app.include_router(user_routes.router)
+app.include_router(city_routes.router)
+app.include_router(bus_routes.router)
+app.include_router(booking_routes.router)
+logger.info("Routers registered")

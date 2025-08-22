@@ -7,7 +7,7 @@ import type { Bus } from '../services/Api';
 
 export const LandingPage = () => {
   const navigate = useNavigate();
-  const { cities, fetchCities, searchBuses, selectBus } = useStore();
+  const { cities, fetchCities, searchBuses, selectBus, startNewBookingSession } = useStore();
   const [fromCity, setFromCity] = useState('');
   const [toCity, setToCity] = useState('');
   const [date, setDate] = useState('');
@@ -37,8 +37,15 @@ export const LandingPage = () => {
   };
 
   const handleSelectBus = (bus: Bus) => {
-    selectBus(bus);
-    navigate(`/bus/${bus.id}/seats`);
+    // Use startNewBookingSession to ensure seats are cleared for new bookings
+    startNewBookingSession(bus);
+    
+    // Pass the travel date to the seat selection page
+    navigate(`/bus/${bus.id}/seats`, { 
+      state: { 
+        travelDate: date || new Date().toISOString().split('T')[0] // Use selected date or today
+      } 
+    });
   };
 
   const setToday = () => {
@@ -85,7 +92,7 @@ export const LandingPage = () => {
       {/* Hero Background */}
       <section className="relative bg-gradient-to-br from-[#dedff7] via-[#d6e8ec] to-white py-16">
         <div className="absolute inset-0 z-0 pointer-events-none select-none">
-          {/* Background elements can be added here */}
+          <img src="https://s3.rdbuz.com/Images/responsiveweb/HomeBanner.webp" alt="" />
         </div>
         <div className="relative z-10 max-w-4xl mx-auto px-4">
           <h1 className="text-white font-extrabold text-4xl sm:text-5xl mb-8 drop-shadow text-left">
@@ -184,7 +191,7 @@ export const LandingPage = () => {
       {/* Green banner: Bengaluru bookings */}
       <section className="w-full bg-[#cdf5dd] py-8 mt-8 flex flex-col items-center">
         <div className="flex flex-col md:flex-row items-center md:justify-center gap-7">
-          <img src="https://i.imgur.com/nKqI4Va.png" alt="" className="w-40 h-32 object-contain" />
+          <img src="https://s3.rdbuz.com/Images/perzcards/socialProofingDefault.webp" alt="" className="w-40 h-32 object-contain" />
           <div className="text-xl md:text-2xl font-bold text-green-900 text-center mb-3 md:mb-0">
             25,000+ people booked from Bengaluru <br />
             <span className="text-base font-normal">on redBus last month</span>

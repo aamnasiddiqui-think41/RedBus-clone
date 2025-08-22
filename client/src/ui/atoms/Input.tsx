@@ -2,10 +2,7 @@
 import React from 'react';
 
 // --- TextInput ---
-<<<<<<< Updated upstream
-type TextInputProps = React.InputHTMLAttributes<HTMLInputElement>;
-=======
-interface TextInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
+interface TextInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   onChange?: (value: string) => void;
 }
@@ -22,17 +19,8 @@ export const TextInput = ({
       onChange(e.target.value);
     }
   };
->>>>>>> Stashed changes
 
-export const TextInput = ({ className = '', ...props }: TextInputProps) => {
   return (
-<<<<<<< Updated upstream
-    <input
-      type="text"
-      className={`border border-border rounded-card p-3 focus:outline-none focus:ring-2 focus:ring-primary ${className}`}
-      {...props}
-    />
-=======
     <div>
       {label && (
         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -40,21 +28,17 @@ export const TextInput = ({ className = '', ...props }: TextInputProps) => {
         </label>
       )}
       <input
-        className={`w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-red-500 transition-all duration-200 ${className}`}
+        className={`w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${className}`}
         value={value || ''}
         onChange={handleChange}
         {...props}
       />
     </div>
->>>>>>> Stashed changes
   );
 };
 
 // --- Select ---
-<<<<<<< Updated upstream
-type SelectProps = React.SelectHTMLAttributes<HTMLSelectElement>;
-=======
-interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'onChange'> {
+interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   options?: Array<{ value: string; label: string }>;
   onChange?: (value: string) => void;
@@ -74,18 +58,8 @@ export const Select = ({
       onChange(e.target.value);
     }
   };
->>>>>>> Stashed changes
 
-export const Select = ({ className = '', children, ...props }: SelectProps) => {
   return (
-<<<<<<< Updated upstream
-    <select
-      className={`border border-border rounded-card p-3 focus:outline-none focus:ring-2 focus:ring-primary ${className}`}
-      {...props}
-    >
-      {children}
-    </select>
-=======
     <div>
       {label && (
         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -93,7 +67,7 @@ export const Select = ({ className = '', children, ...props }: SelectProps) => {
         </label>
       )}
       <select
-        className={`w-full border border-gray-200 rounded-xl px-4 py-3 text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-red-100 focus:border-red-500 transition-all duration-200 ${className}`}
+        className={`w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${className}`}
         value={value || ''}
         onChange={handleChange}
         {...props}
@@ -109,7 +83,6 @@ export const Select = ({ className = '', children, ...props }: SelectProps) => {
         )}
       </select>
     </div>
->>>>>>> Stashed changes
   );
 };
 

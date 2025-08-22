@@ -2,11 +2,14 @@
 import React from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { AppRoutes } from './router/Routes';
+import { AuthInitializer } from './components/auth/AuthInitializer';
 
 function App() {
   return (
     <BrowserRouter>
-      <AppRoutes />
+      <AuthInitializer>
+        <AppRoutes />
+      </AuthInitializer>
     </BrowserRouter>
   );
 }
