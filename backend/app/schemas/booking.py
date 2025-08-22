@@ -42,3 +42,8 @@ class BookingListResponse(BaseModel):
             }
         ]
     })
+
+class CancelBookingResponse(BaseModel):
+    message: str = Field(..., json_schema_extra={"example": "Booking cancelled successfully"})
+    booking_id: str = Field(..., json_schema_extra={"example": "BKG001"})
+    status: str = Field(..., json_schema_extra={"example": "CANCELLED"})

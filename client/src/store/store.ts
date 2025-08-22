@@ -33,6 +33,7 @@ interface AppState {
   searchBuses: (data: Api.SearchBusesRequest) => Promise<void>;
   fetchBusSeats: (busId: string, travelDate?: string) => Promise<void>;
   fetchBookings: () => Promise<void>;
+  cancelBooking: (bookingId: string) => Promise<void>;
 
   // Booking process
   selectBus: (bus: Api.Bus) => void;
@@ -491,6 +492,27 @@ export const useStore = create<AppState>((set, get) => ({
       console.log('Setting loading to false...');
       set({ loading: false });
       console.log('Loading state set to false');
+    }
+  },
+
+  cancelBooking: async (bookingId) => {
+    const token = get().token;
+    if (!token) {
+      console.error('No token available to cancel booking.');
+      return;
+    }
+
+    set({ loading: true, error: null });
+    try {
+      await Api.api.cancelBooking(bookingId, token);
+      console.log(`Booking with ID ${bookingId} cancelled successfully.`);
+      // Refresh bookings after cancellation
+      await get().fetchBookings();
+    } catch (error: any) {
+      console.error('Error cancelling booking:', error);
+      set({ error: error.message });
+    } finally {
+      set({ loading: false });
     }
   },
 

@@ -162,3 +162,66 @@ class BookingService:
         except Exception as e:
             print(f"Error fetching user bookings: {e}")
             return []
+
+    def cancel_booking(self, booking_id: str, user: User) -> Dict[str, Any]:
+        """
+        Cancel a booking and make seats available again
+        """
+        try:
+            logger.info("Cancelling booking {booking_id} for user {user_id}", 
+                       booking_id=booking_id, user_id=user.id)
+            
+            # Convert string ID to UUID
+            try:
+                booking_uuid = uuid.UUID(booking_id)
+            except ValueError:
+                raise ValueError("Invalid booking ID format")
+            
+            # Find the booking and verify ownership
+            booking = self.db.query(Booking).filter(
+                Booking.id == booking_uuid,
+                Booking.user_id == user.id
+            ).first()
+            
+            if not booking:
+                raise ValueError("Booking not found or you don't have permission to cancel it")
+            
+            if booking.status == "CANCELLED":
+                raise ValueError("Booking is already cancelled")
+            
+            # Get all seats for this booking
+            booking_seats = self.db.query(BookingSeat).filter(BookingSeat.booking_id == booking_uuid).all()
+            
+            if not booking_seats:
+                raise ValueError("No seats found for this booking")
+            
+            # Mark seats as available again
+            for bs in booking_seats:
+                seat = self.db.query(Seat).filter(Seat.id == bs.seat_id).first()
+                if seat:
+                    seat.is_available = True
+                    logger.info("Marked seat {seat_no} as available", seat_no=seat.seat_no)
+            
+            # Delete all booking seat records
+            for bs in booking_seats:
+                self.db.delete(bs)
+            
+            # Update booking status to cancelled
+            booking.status = "CANCELLED"
+            
+            # Commit all changes
+            self.db.commit()
+            
+            logger.info("Booking {booking_id} cancelled successfully", booking_id=booking_id)
+            
+            return {
+                "message": "Booking cancelled successfully",
+                "booking_id": str(booking.id),
+                "status": "CANCELLED"
+            }
+            
+        except Exception as e:
+            logger.error("Error cancelling booking {booking_id}: {error}", 
+                        booking_id=booking_id, error=str(e))
+            self.db.rollback()
+            raise

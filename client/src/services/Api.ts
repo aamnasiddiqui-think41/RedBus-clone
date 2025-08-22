@@ -248,6 +248,13 @@ class ApiService {
   getBookings(token: string): Promise<GetBookingsResponse> {
     return this.request('/bookings', { headers: { Authorization: `Bearer ${token}` } });
   }
+
+  cancelBooking(bookingId: string, token: string): Promise<{ message: string; booking_id: string; status: string }> {
+    return this.request(`/bookings/${bookingId}`, { 
+      method: 'DELETE', 
+      headers: { Authorization: `Bearer ${token}` } 
+    });
+  }
 }
 
 export const api = new ApiService();
