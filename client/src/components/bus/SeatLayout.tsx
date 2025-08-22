@@ -201,105 +201,51 @@ export const SeatLayout = ({ busId, travelDate, onSeatsSelected }: SeatLayoutPro
           <p className="text-blue-600 text-sm">Travel Date: {travelDate}</p>
         )}
         <p className="text-blue-600 text-sm">Click on available seats to select them</p>
-        <p className="text-red-600 text-sm">DEBUG: {seats.length} seats loaded</p>
-        
-        {/* Selected seats summary */}
-        {selectedSeats.length > 0 && (
-          <div className="mt-3 p-4 bg-green-100 border-2 border-green-300 rounded-lg shadow-md">
-            <h4 className="text-green-800 font-bold text-lg mb-2">🎫 Booking Summary</h4>
-            <div className="space-y-2">
-              <p className="text-green-800 font-medium">
-                Selected Seats: <span className="bg-green-200 px-2 py-1 rounded font-bold">{selectedSeats.join(', ')}</span>
-              </p>
-              <p className="text-green-700 font-medium">
-                Total Seats: <span className="bg-green-200 px-2 py-1 rounded font-bold">{selectedSeats.length}</span>
-              </p>
-              <p className="text-green-700 font-medium">
-                Estimated Cost: <span className="bg-green-200 px-3 py-1 rounded font-bold text-lg">₹{selectedSeats.reduce((total, seatNo) => {
-                  const seat = seats.find(s => s.seat_no === seatNo);
-                  return total + (seat?.price || 0);
-                }, 0)}</span>
-              </p>
-            </div>
-          </div>
-        )}
-        
-        {/* Manual refresh button */}
-        <button 
-          onClick={() => {
-            console.log('=== MANUAL REFRESH: Refreshing seats ===');
-            fetchBusSeats(busId, travelDate);
-          }}
-          disabled={loading}
-          className={`mt-2 px-3 py-1 text-white text-xs rounded ${
-            loading 
-              ? 'bg-gray-400 cursor-not-allowed' 
-              : 'bg-blue-500 hover:bg-blue-600'
-          }`}
-        >
-          {loading ? '⏳ Refreshing...' : '🔄 Refresh Seats'}
-        </button>
-        
-        {/* Debug button */}
-        <button 
-          onClick={() => {
-            console.log('=== MANUAL DEBUG: Current state ===');
-            console.log('Bus ID:', busId);
-            console.log('Travel Date:', travelDate);
-            console.log('Seats in store:', seats);
-            console.log('Loading:', loading);
-            console.log('Error:', error);
-            console.log('Selected seats:', selectedSeats);
-          }}
-          className="mt-2 ml-2 px-3 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600"
-        >
-          Debug: Current State
-        </button>
-        
-        {/* Store state debug button */}
-        <button 
-          onClick={() => {
-            const store = useStore.getState();
-            console.log('=== STORE STATE DEBUG ===');
-            console.log('Full store state:', store);
-            console.log('Store seats:', store.seats);
-            console.log('Store loading:', store.loading);
-            console.log('Store error:', store.error);
-          }}
-          className="mt-2 ml-2 px-3 py-1 bg-purple-500 text-white text-xs rounded hover:bg-purple-600"
-        >
-          Debug: Store State
-        </button>
-
-        {/* Reset Booking State button */}
-        <button 
-          onClick={resetBookingState}
-          className="mt-2 ml-2 px-3 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600"
-        >
-          Reset Booking State
-        </button>
-
-        {/* Start New Booking Session button */}
-        {selectedBus && (
-          <button 
-            onClick={() => startNewBookingSession(selectedBus)}
-            className="mt-2 ml-2 px-3 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600"
-          >
-            Start New Session
-          </button>
-        )}
-
-        {/* Clear Selected Seats button */}
-        {selectedSeats.length > 0 && (
-          <button 
-            onClick={() => setSelectedSeats([])}
-            className="mt-2 ml-2 px-3 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600"
-          >
-            Clear Selection
-          </button>
-        )}
       </div>
       
+      {/* Manual refresh button */}
+      <button 
+        onClick={() => {
+          fetchBusSeats(busId, travelDate);
+        }}
+        disabled={loading}
+        className={`mt-2 px-3 py-1 text-white text-xs rounded ${
+          loading 
+            ? 'bg-gray-400 cursor-not-allowed' 
+            : 'bg-blue-500 hover:bg-blue-600'
+        }`}
+      >
+        {loading ? '⏳ Refreshing...' : '🔄 Refresh Seats'}
+      </button>
+
+      {/* Reset Booking State button */}
+      <button 
+        onClick={resetBookingState}
+        className="mt-2 ml-2 px-3 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600"
+      >
+        Reset Booking State
+      </button>
+
+      {/* Start New Booking Session button */}
+      {selectedBus && (
+        <button 
+          onClick={() => startNewBookingSession(selectedBus)}
+          className="mt-2 ml-2 px-3 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600"
+        >
+          Start New Session
+        </button>
+      )}
+
+      {/* Clear Selected Seats button */}
+      {selectedSeats.length > 0 && (
+        <button 
+          onClick={() => setSelectedSeats([])}
+          className="mt-2 ml-2 px-3 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600"
+        >
+          Clear Selection
+        </button>
+      )}
+
       {/* Real-time fare counter */}
       <div className="bg-blue-100 p-3 rounded-lg border border-blue-300">
         <div className="flex justify-between items-center">
@@ -309,7 +255,7 @@ export const SeatLayout = ({ busId, travelDate, onSeatsSelected }: SeatLayoutPro
               {selectedSeats.length} seat{selectedSeats.length !== 1 ? 's' : ''} selected
             </span>
             {selectedSeats.length > 0 && (
-              <div className="text-blue-800 font-bold text-lg animate-pulse">
+              <div className="text-blue-800 font-bold text-lg">
                 Total: ₹{selectedSeats.reduce((total, seatNo) => {
                   const seat = seats.find(s => s.seat_no === seatNo);
                   return total + (seat?.price || 0);
@@ -319,30 +265,7 @@ export const SeatLayout = ({ busId, travelDate, onSeatsSelected }: SeatLayoutPro
           </div>
         </div>
       </div>
-      
-      {/* Test Data Display */}
-      <div className="bg-purple-100 p-3 rounded-lg border border-purple-300">
-        <h4 className="font-medium text-purple-800 mb-2">🧪 Test Data:</h4>
-        <p className="text-purple-700 text-sm">API Response: {seats.length} seats received</p>
-        <p className="text-purple-700 text-sm">Available: {seats.filter(s => s.is_available).length}</p>
-        <p className="text-purple-700 text-sm">Unavailable: {seats.filter(s => !s.is_available).length}</p>
-        <p className="text-purple-700 text-sm">Selected: {selectedSeats.length}</p>
-        
-        {/* Show first few seats for debugging */}
-        {seats.length > 0 && (
-          <div className="mt-2">
-            <p className="text-purple-700 text-sm font-medium">First 3 seats:</p>
-            <div className="space-y-1">
-              {seats.slice(0, 3).map((seat, index) => (
-                <div key={index} className="text-xs bg-purple-200 p-1 rounded">
-                  {seat.seat_no}: {seat.seat_type} - ₹{seat.price} - Available: {seat.is_available ? '✅' : '❌'}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-      
+
       {seats.length > 0 ? (
         <div className="grid grid-cols-5 gap-2">
           {seats.map((seat) => {
@@ -354,10 +277,10 @@ export const SeatLayout = ({ busId, travelDate, onSeatsSelected }: SeatLayoutPro
                 onClick={() => handleSeatClick(seat)}
                 className={`p-2 border rounded-md text-center transition-all duration-200 ${
                   !seat.is_available
-                    ? 'bg-gray-400 cursor-not-allowed text-gray-600 border-gray-500' // Grey for unavailable
+                    ? 'bg-gray-400 cursor-not-allowed text-gray-600 border-gray-500'
                     : isSelected
-                    ? 'bg-green-800 text-white border-green-900 cursor-pointer shadow-lg transform scale-105' // Dark green for selected
-                    : 'bg-green-200 hover:bg-green-300 cursor-pointer border-green-400 hover:border-green-500 hover:shadow-md' // Light green for available
+                    ? 'bg-green-800 text-white border-green-900 cursor-pointer shadow-lg'
+                    : 'bg-green-200 hover:bg-green-300 cursor-pointer border-green-400 hover:border-green-500 hover:shadow-md'
                 }`}
                 title={`${seat.seat_no} - ${seat.seat_type} - ₹${seat.price} - ${seat.is_available ? 'Available' : 'Booked'}`}
               >
@@ -379,63 +302,6 @@ export const SeatLayout = ({ busId, travelDate, onSeatsSelected }: SeatLayoutPro
           No seats found for this bus
         </div>
       )}
-      
-      {/* Debug info */}
-      <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-        <h4 className="font-semibold text-yellow-800">Debug Info:</h4>
-        
-        {/* Color Legend */}
-        <div className="mb-3 p-3 bg-yellow-100 rounded border border-yellow-300">
-          <h5 className="font-medium text-yellow-800 mb-2">🎨 Color Scheme:</h5>
-          <div className="grid grid-cols-3 gap-2 text-xs">
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 bg-green-200 border border-green-400 rounded"></div>
-              <span>Light Green = Available</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 bg-green-800 border border-green-900 rounded"></div>
-              <span>Dark Green = Selected</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 bg-gray-400 border border-gray-500 rounded"></div>
-              <span>Grey = Unavailable</span>
-            </div>
-          </div>
-        </div>
-        
-        <p>Total seats: {seats.length}</p>
-        <p>Available seats: {seats.filter(s => s.is_available).length}</p>
-        <p>Selected seats: {selectedSeats.join(', ') || 'None'}</p>
-        <p>Bus ID: {busId}</p>
-        <p>Travel Date: {travelDate || 'Not set'}</p>
-        <p>Loading: {loading ? 'Yes' : 'No'}</p>
-        <p>Error: {error || 'None'}</p>
-        
-        {/* Raw seats data for debugging */}
-        <details className="mt-3">
-          <summary className="cursor-pointer font-medium text-yellow-700">Raw Seats Data</summary>
-          <pre className="mt-2 text-xs bg-yellow-100 p-2 rounded overflow-auto max-h-40">
-            {JSON.stringify(seats, null, 2)}
-          </pre>
-        </details>
-        
-        {/* Selected seats details */}
-        {selectedSeats.length > 0 && (
-          <details className="mt-3">
-            <summary className="cursor-pointer font-medium text-yellow-700">Selected Seats Details</summary>
-            <div className="mt-2 space-y-1">
-              {selectedSeats.map(seatNo => {
-                const seat = seats.find(s => s.seat_no === seatNo);
-                return seat ? (
-                  <div key={seatNo} className="text-xs bg-yellow-100 p-2 rounded">
-                    <strong>{seat.seat_no}</strong> - {seat.seat_type} - ₹{seat.price}
-                  </div>
-                ) : null;
-              })}
-            </div>
-          </details>
-        )}
-      </div>
     </div>
   );
 };

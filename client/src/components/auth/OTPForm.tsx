@@ -8,9 +8,15 @@ interface OTPFormProps {
 
 export const OTPForm = ({ onVerify }: OTPFormProps) => {
   const [otp, setOtp] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!/^\d{6}$/.test(otp)) {
+      setError('OTP must be a 6-digit number');
+      return;
+    }
+    setError(null);
     onVerify(otp);
   };
 
@@ -30,6 +36,7 @@ export const OTPForm = ({ onVerify }: OTPFormProps) => {
           placeholder="Enter the 6-digit OTP"
           required
         />
+        {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
       </div>
       <Button type="submit" variant="primary" className="w-full">
         Verify OTP

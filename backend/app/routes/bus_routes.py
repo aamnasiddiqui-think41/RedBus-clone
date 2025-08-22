@@ -5,6 +5,7 @@ from app.schemas.bus import BusSearchRequest, BusSearchResponse, SeatLayoutRespo
 from app.services.bus_service import BusService
 from datetime import date
 from typing import Optional
+from app.core.logging import logger
 
 router = APIRouter(prefix="/api", tags=["buses"])
 
@@ -17,12 +18,8 @@ def debug_seats(bus_id: str, db: Session = Depends(get_db)):
         from app.db.models.seat import Seat
         import uuid
         
-        # Convert to UUID
         bus_uuid = uuid.UUID(bus_id)
-        
-        # Get seats directly
         seats = db.query(Seat).filter(Seat.bus_id == bus_uuid).all()
-        
         return {
             "bus_id": bus_id,
             "seats_found": len(seats),
@@ -38,7 +35,8 @@ def debug_seats(bus_id: str, db: Session = Depends(get_db)):
             ]
         }
     except Exception as e:
-        return {"error": str(e), "bus_id": bus_id}
+        logger.exception("Failed to debug seats for bus_id={bus_id}: {error}", bus_id=bus_id, error=e)
+        raise HTTPException(status_code=500, detail="Failed to fetch seats for debug")
 
 @router.post("/search-buses", response_model=BusSearchResponse)
 def search_buses(search_request: BusSearchRequest, db: Session = Depends(get_db)):
@@ -48,16 +46,13 @@ def search_buses(search_request: BusSearchRequest, db: Session = Depends(get_db)
     try:
         service = BusService(db)
         buses = service.search_buses(search_request)
-        
-        # Return empty list with success message if no buses found
         if not buses:
             return {"buses": [], "message": "No buses found for the selected route and date"}
-        
         return {"buses": buses, "message": f"Found {len(buses)} buses for your journey"}
-        
     except HTTPException:
         raise
     except Exception as e:
+        logger.exception("Search buses failed: {error}", error=e)
         raise HTTPException(status_code=500, detail="Failed to search buses")
 
 @router.get("/bus/{bus_id}/seats", response_model=SeatLayoutResponse)
@@ -72,12 +67,11 @@ def get_seat_layout(
     try:
         service = BusService(db)
         seat_layout = service.get_seat_layout(bus_id, travel_date)
-        
         if not seat_layout:
             raise HTTPException(status_code=404, detail="Invalid bus ID")
-        
         return seat_layout
     except HTTPException:
         raise
     except Exception as e:
+        logger.exception("Fetch seat layout failed for bus_id={bus_id}: {error}", bus_id=bus_id, error=e)
         raise HTTPException(status_code=500, detail="Failed to fetch seat layout")

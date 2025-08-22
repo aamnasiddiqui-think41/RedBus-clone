@@ -3,6 +3,7 @@ from app.db.models.user import User
 from app.db.models.booking import Booking
 from app.schemas.user import UserUpdate
 import uuid
+from app.core.logging import logger
 
 class UserService:
     def __init__(self, db: Session):
@@ -17,12 +18,14 @@ class UserService:
             return None
 
         update_data = user_in.dict(exclude_unset=True)
+        logger.info("Updating user_id={user_id} fields={fields}", user_id=user_id, fields=list(update_data.keys()))
         for key, value in update_data.items():
             setattr(user, key, value)
 
         self.db.add(user)
         self.db.commit()
         self.db.refresh(user)
+        logger.info("User updated user_id={user_id}", user_id=user_id)
         return user
 
     def get_user_profile(self, user_id: uuid.UUID):
@@ -33,15 +36,12 @@ class UserService:
         if not user:
             return None
 
-        # Calculate total bookings and amount spent
         bookings = self.db.query(Booking).filter(Booking.user_id == user_id).all()
         total_bookings = len(bookings)
         total_amount_spent = sum(booking.amount for booking in bookings)
         
-        # Calculate wallet balance (₹75 per booking)
         wallet_balance = total_bookings * 75.0
         
-        # Check if personal details are added (using existing fields)
         personal_details_added = bool(
             user.name and user.email and user.gender and user.dob
         )

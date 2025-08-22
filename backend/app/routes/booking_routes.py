@@ -5,6 +5,7 @@ from app.schemas.booking import BookingCreate, BookingResponse, BookingListRespo
 from app.services.booking_service import BookingService
 from app.db.models.user import User
 from app.deps import get_current_user
+from app.core.logging import logger
 
 router = APIRouter(prefix="/api", tags=["bookings"])
 
@@ -18,24 +19,15 @@ def book_ticket(
     Book a ticket - requires authentication
     """
     try:
-        print(f"=== BOOKING ROUTE DEBUG ===")
-        print(f"Received booking data: {booking_data}")
-        print(f"Current user: {current_user.id}")
-        print(f"User authenticated: {current_user is not None}")
-        
+        logger.info("Booking request received for user={user_id}", user_id=current_user.id)
         service = BookingService(db)
         booking = service.create_booking(booking_data, current_user)
-        
-        print(f"=== BOOKING CREATED SUCCESSFULLY ===")
-        print(f"Returning: {booking}")
-        
+        logger.info("Booking created successfully booking_id={booking_id}", booking_id=booking["booking_id"])
         return booking
+    except HTTPException:
+        raise
     except Exception as e:
-        print(f"=== BOOKING ROUTE ERROR ===")
-        print(f"Error: {e}")
-        print(f"Error type: {type(e)}")
-        import traceback
-        traceback.print_exc()
+        logger.exception("Booking failed: {error}", error=e)
         raise HTTPException(status_code=500, detail=f"Booking failed: {str(e)}")
 
 @router.get("/debug", response_model=dict)
@@ -59,22 +51,13 @@ def get_my_bookings(
     Get all bookings for the authenticated user
     """
     try:
-        print(f"=== BACKEND: get_my_bookings called ===")
-        print(f"Current user ID: {current_user.id}")
-        print(f"Current user phone: {current_user.phone}")
-        print(f"Current user name: {current_user.name}")
-        
+        logger.info("Fetching bookings for user={user_id}", user_id=current_user.id)
         service = BookingService(db)
         bookings = service.get_user_bookings(current_user)
-        
-        print(f"Bookings found for user {current_user.id}: {len(bookings)}")
-        for booking in bookings:
-            print(f"  - {booking['booking_id']}: {booking['bus_name']} ({booking['from_city']} → {booking['to_city']})")
-        
+        logger.info("Found {count} bookings for user={user_id}", count=len(bookings), user_id=current_user.id)
         return {"bookings": bookings}
+    except HTTPException:
+        raise
     except Exception as e:
-        print(f"=== BACKEND ERROR: Failed to fetch bookings ===")
-        print(f"Error: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.exception("Failed to fetch bookings: {error}", error=e)
         raise HTTPException(status_code=500, detail="Failed to fetch bookings")

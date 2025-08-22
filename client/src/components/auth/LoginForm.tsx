@@ -9,9 +9,15 @@ interface LoginFormProps {
 export const LoginForm = ({ onLogin }: LoginFormProps) => {
   const [phone, setPhone] = useState('');
   const [countryCode, setCountryCode] = useState('+91');
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!/^\d{10}$/.test(phone)) {
+      setError('Phone number must be exactly 10 digits');
+      return;
+    }
+    setError(null);
     onLogin(countryCode, phone);
   };
 
@@ -41,6 +47,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
             required
           />
         </div>
+        {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
       </div>
       <Button type="submit" className="w-full">
         Send OTP
