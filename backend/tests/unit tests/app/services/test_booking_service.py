@@ -1,6 +1,7 @@
 import uuid
 import builtins
 from datetime import date
+import pytest
 
 from app.services.booking_service import BookingService
 from app.db.models.bus import Bus
@@ -67,6 +68,8 @@ class DummyDB:
         self.flushed = True
 
     def commit(self):
+        if getattr(self, 'fail_commit', False):
+            raise RuntimeError('commit failed')
         self.committed = True
 
     def rollback(self):
@@ -169,6 +172,34 @@ def test_create_booking_invalid_bus_id_raises():
         assert 'Invalid bus ID' in str(e)
 
 
+#edge case: commit failure should rollback and bubble up
+def test_create_booking_commit_failure_rolls_back_and_raises():
+    bus_uuid = uuid.uuid4()
+    from_city_id = uuid.uuid4()
+    to_city_id = uuid.uuid4()
+    db = DummyDB(
+        buses=[DummyBus(bus_uuid, 'ACME Travels', from_city_id, to_city_id)],
+        cities=[DummyCity(from_city_id, 'FromCity'), DummyCity(to_city_id, 'ToCity')],
+        seats=[DummySeat(uuid.uuid4(), bus_uuid, 'A1', 'Window', 500.0)]
+    )
+    db.fail_commit = True
+    svc = BookingService(db)
+    from app.schemas.booking import BookingCreate, PassengerDetail, ContactInfo
+    booking_data = BookingCreate(
+        bus_id=str(bus_uuid),
+        travel_date=date(2025, 1, 1),
+        seats=['A1'],
+        passenger_details=[PassengerDetail(name='X', age=30, gender='Male')],
+        contact=ContactInfo(phone='+911234567890', email='x@example.com')
+    )
+    user = DummyUser(uuid.uuid4())
+    try:
+        svc.create_booking(booking_data, user)
+        assert False, 'Expected RuntimeError'
+    except RuntimeError as e:
+        assert 'commit failed' in str(e)
+
+
 def test_create_booking_bus_not_found():
     bus_uuid = uuid.uuid4()
     db = DummyDB(buses=[], seats=[])
@@ -214,6 +245,38 @@ def test_create_booking_seat_not_found():
         assert False, 'Expected ValueError'
     except ValueError as e:
         assert 'Seat A3 not found' in str(e)
+
+
+#negative path: error during commit should rollback and propagate
+def test_create_booking_commit_failure_rolls_back(monkeypatch):
+    bus_uuid = uuid.uuid4()
+    from_city_id = uuid.uuid4()
+    to_city_id = uuid.uuid4()
+    class FailingDB(DummyDB):
+        def commit(self):
+            super().commit()
+            raise RuntimeError("commit failed")
+        def rollback(self):
+            self.committed = False
+            self.rolled_back = True
+    db = FailingDB(
+        buses=[DummyBus(bus_uuid, 'ACME Travels', from_city_id, to_city_id)],
+        cities=[DummyCity(from_city_id, 'FromCity'), DummyCity(to_city_id, 'ToCity')],
+        seats=[DummySeat(uuid.uuid4(), bus_uuid, 'A1', 'Window', 500.0)]
+    )
+    svc = BookingService(db)
+    from app.schemas.booking import BookingCreate, PassengerDetail, ContactInfo
+    booking_data = BookingCreate(
+        bus_id=str(bus_uuid),
+        travel_date=date(2025, 1, 1),
+        seats=['A1'],
+        passenger_details=[PassengerDetail(name='X', age=30, gender='Male')],
+        contact=ContactInfo(phone='+911234567890', email='x@example.com')
+    )
+    user = DummyUser(uuid.uuid4())
+    with pytest.raises(RuntimeError):
+        svc.create_booking(booking_data, user)
+    assert getattr(db, 'rolled_back', False) is True
 
 
 def test_get_user_bookings_returns_expected_structure():

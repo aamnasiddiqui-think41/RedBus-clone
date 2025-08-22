@@ -39,3 +39,10 @@ def test_get_all_cities_db_error_returns_empty(monkeypatch):
     assert svc.get_all_cities() == []
 
 
+#edge case: empty table returns empty list
+def test_get_all_cities_empty():
+    db = DummyDB([])
+    svc = CityService(db)
+    assert svc.get_all_cities() == []
+
+

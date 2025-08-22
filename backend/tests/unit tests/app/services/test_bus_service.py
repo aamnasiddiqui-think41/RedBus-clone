@@ -32,8 +32,14 @@ class DummyDB:
         self._bookings = bookings or []
         self._booking_seats = booking_seats or []
         self._buses = buses or []
+        self.raise_on_query = False
 
     def query(self, model):
+        if self.raise_on_query:
+            class Broken:
+                def filter(self, *a, **k):
+                    raise RuntimeError("DB failure")
+            return Broken()
         class Q:
             def __init__(self, outer, model):
                 self.outer = outer
@@ -84,6 +90,28 @@ def test_get_seat_layout_invalid_bus_id():
     db = DummyDB()
     svc = BusService(db)
     res = svc.get_seat_layout('not-a-uuid', None)
+    assert res['seats'] == []
+
+
+#negative path: db error while querying seats returns empty list gracefully
+def test_get_seat_layout_db_error_returns_empty(monkeypatch):
+    class BrokenDB(DummyDB):
+        def query(self, model):
+            class Q:
+                def filter(self, *args, **kwargs):
+                    raise RuntimeError("db broke")
+            return Q()
+    svc = BusService(BrokenDB())
+    res = svc.get_seat_layout(str(uuid.uuid4()), None)
+    assert res['seats'] == []
+
+
+#edge case: database failure returns empty structure (graceful handling)
+def test_get_seat_layout_db_failure_returns_empty():
+    db = DummyDB()
+    db.raise_on_query = True
+    svc = BusService(db)
+    res = svc.get_seat_layout(str(uuid.uuid4()), None)
     assert res['seats'] == []
 
 

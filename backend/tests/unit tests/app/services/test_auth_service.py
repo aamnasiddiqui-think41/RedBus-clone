@@ -12,17 +12,24 @@ class DummySession:
     def __init__(self):
         self.objects = []
         self._committed = False
+        self._rolled_back = False
+        self._fail_commit = False
 
     def add(self, obj):
         self.objects.append(obj)
 
     def commit(self):
+        if self._fail_commit:
+            raise RuntimeError("commit failed")
         self._committed = True
 
     def refresh(self, obj):
         # Simulate DB assigning an ID
         if getattr(obj, 'id', None) is None:
             obj.id = uuid.uuid4()
+
+    def rollback(self):
+        self._rolled_back = True
 
     def query(self, model):
         class Query:
@@ -51,6 +58,35 @@ class DummySession:
                 return _Q(results)
 
         return Query(self.objects)
+
+
+#negative path: request_otp commit failure should rollback and raise
+def test_request_otp_commit_failure_rolls_back_and_raises(monkeypatch):
+    class FailingSession(DummySession):
+        def __init__(self):
+            super().__init__()
+            self.rolled_back = False
+        def commit(self):
+            raise RuntimeError("db commit failed")
+        def rollback(self):
+            self.rolled_back = True
+
+    db = FailingSession()
+    svc = AuthService(db)
+    from app.schemas.auth import OTPRequest
+    with pytest.raises(RuntimeError):
+        svc.request_otp(OTPRequest(country_code="+91", phone="9876543210"))
+    assert db.rolled_back is True
+
+def test_request_otp_commit_failure_rolls_back_and_raises():
+    db = DummySession()
+    db._fail_commit = True
+    svc = AuthService(db)
+    from app.schemas.auth import OTPRequest
+    with pytest.raises(RuntimeError):
+        svc.request_otp(OTPRequest(country_code="+91", phone="9876543210"))
+    assert db._rolled_back is True
+
 
 
 def test_request_otp_validates_phone_and_creates_record():
@@ -105,5 +141,14 @@ def test_verify_otp_non_digit_rejected():
     otp.id = uuid.uuid4()
     db.add(otp)
     assert svc.verify_otp(str(otp.id), "12a456") is None
+
+
+def test_verify_otp_wrong_code_returns_none():
+    db = DummySession()
+    svc = AuthService(db)
+    otp = OTP(phone="+919876543210", otp_code="123456", expires_at=datetime.now(timezone.utc) + timedelta(minutes=5))
+    otp.id = uuid.uuid4()
+    db.add(otp)
+    assert svc.verify_otp(str(otp.id), "654321") is None
 
 

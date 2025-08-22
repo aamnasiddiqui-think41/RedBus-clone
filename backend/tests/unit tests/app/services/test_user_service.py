@@ -17,6 +17,7 @@ class DummyDB:
     def __init__(self, user=None):
         self._user = user
         self.committed = False
+        self.fail_commit = False
 
     def query(self, model):
         class Q:
@@ -35,6 +36,8 @@ class DummyDB:
         pass
 
     def commit(self):
+        if self.fail_commit:
+            raise RuntimeError("commit failed")
         self.committed = True
 
     def refresh(self, obj):
@@ -64,5 +67,20 @@ def test_update_user_none_if_missing():
     svc = UserService(db)
     from app.schemas.user import UserUpdate
     assert svc.update_user(user_id, UserUpdate(name="Nope")) is None
+
+
+#edge case: commit failure should propagate
+def test_update_user_commit_failure_raises():
+    user_id = uuid.uuid4()
+    dummy_user = DummyUser(user_id)
+    db = DummyDB(dummy_user)
+    db.fail_commit = True
+    svc = UserService(db)
+    from app.schemas.user import UserUpdate
+    try:
+        svc.update_user(user_id, UserUpdate(name="X"))
+        assert False, 'Expected RuntimeError'
+    except RuntimeError as e:
+        assert 'commit failed' in str(e)
 
 
