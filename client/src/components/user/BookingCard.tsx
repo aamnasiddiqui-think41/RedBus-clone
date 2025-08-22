@@ -1,4 +1,4 @@
-import React from 'react';
+
 import type { Booking } from '../../services/Api';
 import { Card } from '../shared/Card';
 import { useStore } from '../../store/store';

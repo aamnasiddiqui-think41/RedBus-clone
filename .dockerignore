@@ -1,0 +1,84 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+*.md
+DOCKER.md
+
+# Environment files
+.env
+.env.*
+env.example
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Docker files
+docker-compose*.yml
+Dockerfile.*
+
+# Backend specific
+backend/__pycache__/
+backend/*.py[cod]
+backend/*$py.class
+backend/.pytest_cache/
+backend/.venv/
+backend/venv/
+backend/env/
+backend/ENV/
+backend/*.log
+backend/logs/
+backend/app.log
+backend/*.db
+backend/*.sqlite
+backend/*.sqlite3
+backend/.coverage
+backend/htmlcov/
+backend/.tox/
+backend/.nox/
+backend/build/
+backend/dist/
+backend/*.egg-info/
+
+# Frontend specific
+client/node_modules/
+client/dist/
+client/build/
+client/.env*
+client/npm-debug.log*
+client/yarn-debug.log*
+client/yarn-error.log*
+client/lerna-debug.log*
+client/coverage/
+client/*.lcov
+client/.nyc_output
+client/.eslintcache
+client/.npm
+client/.rpt2_cache/
+client/.rts2_cache_cjs/
+client/.rts2_cache_es/
+client/.rts2_cache_umd/
+client/.node_repl_history
+client/*.tgz
+client/.yarn-integrity
+
+# Makefile
+Makefile
+

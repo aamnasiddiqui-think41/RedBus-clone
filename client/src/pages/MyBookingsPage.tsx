@@ -1,11 +1,11 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store/store';
 import { BookingsList } from '../components/user/BookingsList';
 import { Loader } from '../components/shared/Loader';
 
 export const MyBookingsPage = () => {
-  const { token, user, loading, isInitializing } = useStore();
+  const { token, user, isInitializing } = useStore();
   const navigate = useNavigate();
 
   useEffect(() => {

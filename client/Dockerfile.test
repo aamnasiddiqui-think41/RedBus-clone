@@ -1,0 +1,3 @@
+FROM alpine
+COPY nginx.conf /tmp/nginx.conf
+CMD ["ls", "/tmp"]

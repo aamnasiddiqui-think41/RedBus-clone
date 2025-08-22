@@ -1,5 +1,5 @@
 
-import React from 'react';
+
 import type { Bus } from '../../services/Api';
 import { Button } from '../../ui/atoms';
 import { Card } from '../shared/Card';

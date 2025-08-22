@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { SearchBar } from '../components/bus/SearchBar';
 import { BusList } from '../components/bus/BusList';

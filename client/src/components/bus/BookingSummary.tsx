@@ -1,5 +1,5 @@
 
-import React from 'react';
+
 import { useStore } from '../../store/store';
 import { Button } from '../../ui/atoms';
 import { Card } from '../shared/Card';

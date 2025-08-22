@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database (same as production)
+  database:
+    image: postgres:15-alpine
+    container_name: redbus_database_dev
+    environment:
+      POSTGRES_DB: redbus_db
+      POSTGRES_USER: redbus_user
+      POSTGRES_PASSWORD: redbus_password
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - redbus_network_dev
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U redbus_user -d redbus_db"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # FastAPI Backend (Development mode with hot reload)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: redbus_backend_dev
+    environment:
+      DATABASE_URL: postgresql://redbus_user:redbus_password@database:5432/redbus_db
+      JWT_SECRET_KEY: dev-jwt-secret-key
+      ENVIRONMENT: development
+    ports:
+      - "8000:8000"
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - redbus_network_dev
+    restart: unless-stopped
+    volumes:
+      - ./backend:/app
+      - ./backend/app.log:/app/app.log
+    command: ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+  # React Frontend (Development mode with hot reload)
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+    container_name: redbus_frontend_dev
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    networks:
+      - redbus_network_dev
+    restart: unless-stopped
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    command: ["pnpm", "run", "dev", "--host", "0.0.0.0"]
+
+  # Redis (Optional - for development)
+  redis:
+    image: redis:7-alpine
+    container_name: redbus_redis_dev
+    ports:
+      - "6379:6379"
+    networks:
+      - redbus_network_dev
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+volumes:
+  postgres_data_dev:
+    driver: local
+
+networks:
+  redbus_network_dev:
+    driver: bridge
+

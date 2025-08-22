@@ -2,7 +2,7 @@
 import React from 'react';
 
 // --- TextInput ---
-interface TextInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface TextInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
   label?: string;
   onChange?: (value: string) => void;
 }
@@ -38,7 +38,7 @@ export const TextInput = ({
 };
 
 // --- Select ---
-interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'onChange'> {
   label?: string;
   options?: Array<{ value: string; label: string }>;
   onChange?: (value: string) => void;

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { SeatLayout } from '../components/bus/SeatLayout';
 import { BookingSummary } from '../components/bus/BookingSummary';

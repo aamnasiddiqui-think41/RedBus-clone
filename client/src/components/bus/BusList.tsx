@@ -1,5 +1,5 @@
 
-import React from 'react';
+
 import { useStore } from '../../store/store';
 import { BusCard } from './BusCard';
 import { Loader } from '../shared/Loader';

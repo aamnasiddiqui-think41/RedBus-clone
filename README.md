@@ -139,13 +139,34 @@ curl -X POST "http://localhost:8000/api/search-buses" \
 ### **Backend Setup**
 ```bash
 cd backend
-uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+source .venv/bin/activate
+uv sync
+alembic upgrade head
+python seed_data.py
+uv run uvicorn app.main:app --reload
 ```
 
 ### **Frontend Setup**
 ```bash
-cd frontend
-npm run dev
+cd client
+pnpm install
+pnpm run dev
+```
+
+### **Docker Setup (Recommended)**
+```bash
+# Build and run single container (Frontend + Backend)
+docker build . -t redbus-app
+docker run -p 8000:8000 redbus-app
+
+# Or run full stack with database
+docker-compose up -d
+```
+
+### **Testing**
+```bash
+cd backend
+uv run pytest -q "tests/unit tests"
 ```
 
 ### **Database Setup**

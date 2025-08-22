@@ -7,7 +7,7 @@ import { Loader } from '../components/shared/Loader';
 import { TextInput, Select } from '../ui/atoms/Input';
 
 export const PersonalInfoPage = () => {
-  const { token, user, userProfile, getMyProfile, updateMe, logout, loading, isInitializing } = useStore();
+  const { token, user, userProfile, getMyProfile, updateMe, loading, isInitializing } = useStore();
   const navigate = useNavigate();
   
   const [showForm, setShowForm] = useState(false);

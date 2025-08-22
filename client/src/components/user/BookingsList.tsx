@@ -1,9 +1,8 @@
 
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useStore } from '../../store/store';
 import { BookingCard } from './BookingCard';
 import { Loader } from '../shared/Loader'; // Assuming a generic Loader component exists
-import { EmptyState } from '../shared/EmptyState'; // Assuming a generic EmptyState component exists
 
 export const BookingsList = () => {
   const { myBookings, fetchBookings, loading, error, token, user } = useStore();

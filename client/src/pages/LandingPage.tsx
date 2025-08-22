@@ -7,7 +7,7 @@ import type { Bus } from '../services/Api';
 
 export const LandingPage = () => {
   const navigate = useNavigate();
-  const { cities, fetchCities, searchBuses, selectBus, startNewBookingSession } = useStore();
+  const { cities, fetchCities, searchBuses, startNewBookingSession } = useStore();
   const [fromCity, setFromCity] = useState('');
   const [toCity, setToCity] = useState('');
   const [date, setDate] = useState('');

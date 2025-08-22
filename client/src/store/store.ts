@@ -18,6 +18,7 @@ interface AppState {
   error: string | null;
   searchParams: { from: string; to: string; date: string } | null;
   searchMessage: string | null;  // Add this for bus search messages
+  notification: { message: string; type: 'success' | 'error' | 'info' | 'warning' } | null; // Add notification state
 
   // Auth
   requestOtp: (country_code: string, phone: string) => Promise<void>; // Update signature
@@ -51,6 +52,8 @@ interface AppState {
   checkBackendHealth: () => Promise<boolean>; // Add this to the interface
   testTokenStorage: () => boolean; // Add this to the interface
   syncTokenWithLocalStorage: () => void; // Add this to the interface
+  showNotification: (message: string, type: 'success' | 'error' | 'info' | 'warning') => void; // Add notification actions
+  clearNotification: () => void; // Add notification actions
 }
 
 // Helper function to track token changes
@@ -75,6 +78,7 @@ export const useStore = create<AppState>((set, get) => ({
   error: null,
   searchParams: null,
   searchMessage: null,
+  notification: null,
 
   // --- ACTIONS ---
 
@@ -609,6 +613,14 @@ export const useStore = create<AppState>((set, get) => ({
     if (busId) {
       await get().fetchBusSeats(busId, travelDate);
     }
+  },
+
+  showNotification: (message, type) => {
+    set({ notification: { message, type } });
+  },
+
+  clearNotification: () => {
+    set({ notification: null });
   },
 }));
 

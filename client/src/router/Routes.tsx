@@ -1,12 +1,10 @@
 
-import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useStore } from '../store/store';
 import { Layout } from '../components/layout/Layout';
 import { LoginPage } from '../pages/LoginPage';
 import { MyBookingsPage } from '../pages/MyBookingsPage';
 import { PersonalInfoPage } from '../pages/PersonalInfoPage';
-import { BusTicketsPage } from '../pages/BusTicketsPage';
 import { SeatSelectionPage } from '../pages/SeatSelectionPage';
 import { LandingPage } from '../pages/LandingPage';
 
