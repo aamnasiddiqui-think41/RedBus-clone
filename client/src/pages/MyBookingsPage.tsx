@@ -5,22 +5,25 @@ import { BookingsList } from '../components/user/BookingsList';
 import { Loader } from '../components/shared/Loader';
 
 export const MyBookingsPage = () => {
-  const { token, user, loading } = useStore();
+  const { token, user, loading, isInitializing } = useStore();
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log('=== MY BOOKINGS PAGE DEBUG ===');
-    console.log('Token exists:', !!token);
-    console.log('User exists:', !!user);
-    console.log('User ID:', user?.id);
-    
-    if (!token || !user) {
+    // Only redirect if we're sure there's no session (after initialization)
+    if (!isInitializing && !token && !user) {
       console.log('User not authenticated, redirecting to login');
       navigate('/login');
     }
-  }, [token, user, navigate]);
+  }, [token, user, isInitializing, navigate]);
 
+  // Wait for auth initialization to complete
+  if (isInitializing) {
+    return <Loader />;
+  }
+
+  // If no session after initialization, redirect to login
   if (!token || !user) {
+    // Don't call navigate here - let useEffect handle it
     return <Loader />;
   }
 

@@ -9,7 +9,7 @@ export const BookingsList = () => {
   const { myBookings, fetchBookings, loading, error, token, user } = useStore();
 
   useEffect(() => {
-    console.log('=== BOOKINGS LIST DEBUG ===');
+    console.log('=== BOOKINGS LIST: Fetching bookings ===');
     console.log('Token exists:', !!token);
     console.log('User exists:', !!user);
     console.log('User ID:', user?.id);
@@ -20,7 +20,7 @@ export const BookingsList = () => {
     } else {
       console.log('No token or user, cannot fetch bookings');
     }
-  }, [fetchBookings, token, user]);
+  }, [token, user]); // Remove fetchBookings from dependencies to prevent infinite loop
 
   if (loading) return <Loader />;
   if (error) return (
@@ -48,27 +48,6 @@ export const BookingsList = () => {
 
   return (
     <div className="space-y-4">
-      {/* Debug section */}
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-        <h4 className="text-yellow-800 font-semibold mb-2">🔍 Debug Info</h4>
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <p><strong>User ID:</strong> {user?.id || 'Not set'}</p>
-            <p><strong>Token:</strong> {token ? 'Present' : 'Missing'}</p>
-            <p><strong>Bookings Count:</strong> {myBookings.length}</p>
-          </div>
-          <div>
-            <button 
-              onClick={() => fetchBookings()}
-              className="px-3 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600"
-            >
-              🔄 Refresh Bookings
-            </button>
-          </div>
-        </div>
-      </div>
-      
-      {/* Bookings list */}
       {myBookings.map((booking) => (
         <BookingCard key={booking.booking_id} booking={booking} />
       ))}

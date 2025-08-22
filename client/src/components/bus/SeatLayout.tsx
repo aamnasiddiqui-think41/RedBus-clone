@@ -11,40 +11,57 @@ interface SeatLayoutProps {
 }
 
 export const SeatLayout = ({ busId, travelDate, onSeatsSelected }: SeatLayoutProps) => {
-  const { seats, fetchBusSeats, loading, error } = useStore();
+  const { seats, fetchBusSeats, loading, error, resetBookingState, startNewBookingSession, selectedBus } = useStore();
   const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
 
   useEffect(() => {
-    console.log('=== FRONTEND DEBUG: Fetching seats ===');
+    console.log('=== SEAT LAYOUT: Fetching seats automatically ===');
     console.log('Bus ID:', busId);
     console.log('Travel Date:', travelDate);
-    fetchBusSeats(busId, travelDate);
+    
+    if (busId && travelDate) {
+      // Fetch seats automatically when component mounts or when busId/travelDate changes
+      fetchBusSeats(busId, travelDate);
+      setLastRefreshTime(new Date());
+      
+      // Clear selected seats for new booking session
+      setSelectedSeats([]);
+      console.log('Selected seats cleared for new booking session');
+    }
   }, [busId, travelDate, fetchBusSeats]);
 
-  // Force refresh when component re-renders (e.g., after booking)
+  // Auto-refresh seats (optional - user controlled)
+  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(() => {
+    // Load user preference from localStorage
+    const saved = localStorage.getItem('seatLayout_autoRefresh');
+    return saved === 'true';
+  });
+  const [lastRefreshTime, setLastRefreshTime] = useState<Date | null>(null);
+  
+  // Save user preference to localStorage
+  const toggleAutoRefresh = () => {
+    const newValue = !autoRefreshEnabled;
+    setAutoRefreshEnabled(newValue);
+    localStorage.setItem('seatLayout_autoRefresh', newValue.toString());
+  };
+  
   useEffect(() => {
-    if (busId && travelDate) {
-      console.log('=== FORCE REFRESH: Component re-rendered, refreshing seats ===');
-      fetchBusSeats(busId, travelDate);
-    }
-  }, []); // Empty dependency array means this runs once on mount
-
-  // Auto-refresh seats every 10 seconds to show real-time availability
-  useEffect(() => {
-    if (!busId || !travelDate) return;
+    if (!autoRefreshEnabled || !busId || !travelDate) return;
     
     const interval = setInterval(() => {
       console.log('=== AUTO-REFRESH: Refreshing seats ===');
       fetchBusSeats(busId, travelDate);
-    }, 10000); // Refresh every 10 seconds
+      setLastRefreshTime(new Date());
+    }, 30000); // Refresh every 30 seconds (only when enabled)
     
     return () => clearInterval(interval);
-  }, [busId, travelDate, fetchBusSeats]);
+  }, [autoRefreshEnabled, busId, travelDate, fetchBusSeats]);
 
   // Expose refresh method to parent component
   const refreshSeats = () => {
     console.log('=== MANUAL REFRESH: Refreshing seats ===');
     fetchBusSeats(busId, travelDate);
+    setLastRefreshTime(new Date());
   };
 
 
@@ -112,6 +129,72 @@ export const SeatLayout = ({ busId, travelDate, onSeatsSelected }: SeatLayoutPro
 
   return (
     <div className="space-y-4">
+      {/* Manual refresh button */}
+      <div className="mb-4 flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-gray-800">Select Your Seats</h2>
+        <div className="flex items-center gap-3">
+          {/* Auto-refresh toggle */}
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-gray-700">Auto-refresh:</label>
+            <button
+              onClick={toggleAutoRefresh}
+              className={`px-3 py-1 text-xs rounded transition-colors ${
+                autoRefreshEnabled 
+                  ? 'bg-green-500 text-white hover:bg-green-600' 
+                  : 'bg-gray-300 text-gray-700 hover:bg-gray-400'
+              }`}
+              title="Toggle automatic seat availability updates"
+            >
+              {autoRefreshEnabled ? 'ON' : 'OFF'}
+            </button>
+            {autoRefreshEnabled && (
+              <span className="text-xs text-green-600">Every 30s</span>
+            )}
+          </div>
+          
+          {/* Info text */}
+          <div className="text-xs text-gray-500">
+            Auto-refresh keeps seat availability up-to-date
+          </div>
+          
+          {/* Manual refresh button */}
+          <button
+            onClick={refreshSeats}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2"
+          >
+            <span>🔄</span>
+            Refresh Seats
+          </button>
+        </div>
+      </div>
+
+      {/* Refresh Status */}
+      <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+        <div className="flex items-center justify-between text-sm text-gray-600">
+          <div>
+            <span className="font-medium">Last refresh:</span>
+            <span className="ml-2">
+              {lastRefreshTime 
+                ? lastRefreshTime.toLocaleTimeString() 
+                : 'Never'
+              }
+            </span>
+          </div>
+          {autoRefreshEnabled && (
+            <div>
+              <span className="font-medium">Next auto-refresh:</span>
+              <span className="ml-2">
+                {lastRefreshTime 
+                  ? new Date(lastRefreshTime.getTime() + 30000).toLocaleTimeString()
+                  : 'In 30s'
+                }
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Error display */}
       <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
         <h3 className="text-lg font-semibold text-blue-800 mb-2">Seat Selection</h3>
         {travelDate && (
@@ -187,6 +270,34 @@ export const SeatLayout = ({ busId, travelDate, onSeatsSelected }: SeatLayoutPro
         >
           Debug: Store State
         </button>
+
+        {/* Reset Booking State button */}
+        <button 
+          onClick={resetBookingState}
+          className="mt-2 ml-2 px-3 py-1 bg-yellow-500 text-white text-xs rounded hover:bg-yellow-600"
+        >
+          Reset Booking State
+        </button>
+
+        {/* Start New Booking Session button */}
+        {selectedBus && (
+          <button 
+            onClick={() => startNewBookingSession(selectedBus)}
+            className="mt-2 ml-2 px-3 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600"
+          >
+            Start New Session
+          </button>
+        )}
+
+        {/* Clear Selected Seats button */}
+        {selectedSeats.length > 0 && (
+          <button 
+            onClick={() => setSelectedSeats([])}
+            className="mt-2 ml-2 px-3 py-1 bg-orange-500 text-white text-xs rounded hover:bg-orange-600"
+          >
+            Clear Selection
+          </button>
+        )}
       </div>
       
       {/* Real-time fare counter */}

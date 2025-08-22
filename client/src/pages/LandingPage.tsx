@@ -7,7 +7,7 @@ import type { Bus } from '../services/Api';
 
 export const LandingPage = () => {
   const navigate = useNavigate();
-  const { cities, fetchCities, searchBuses, selectBus } = useStore();
+  const { cities, fetchCities, searchBuses, selectBus, startNewBookingSession, debugTokenStatus, checkBackendHealth, testTokenStorage, syncTokenWithLocalStorage } = useStore();
   const [fromCity, setFromCity] = useState('');
   const [toCity, setToCity] = useState('');
   const [date, setDate] = useState('');
@@ -37,7 +37,9 @@ export const LandingPage = () => {
   };
 
   const handleSelectBus = (bus: Bus) => {
-    selectBus(bus);
+    // Use startNewBookingSession to ensure seats are cleared for new bookings
+    startNewBookingSession(bus);
+    
     // Pass the travel date to the seat selection page
     navigate(`/bus/${bus.id}/seats`, { 
       state: { 
@@ -57,6 +59,32 @@ export const LandingPage = () => {
     tomorrow.setDate(tomorrow.getDate() + 1);
     const formattedDate = tomorrow.toISOString().split('T')[0]; // Format: YYYY-MM-DD
     setDate(formattedDate);
+  };
+
+  const handleDebugToken = () => {
+    debugTokenStatus();
+  };
+
+  const handleCheckBackend = async () => {
+    const isHealthy = await checkBackendHealth();
+    if (isHealthy) {
+      alert('✅ Backend is reachable!');
+    } else {
+      alert('❌ Backend is not reachable. Check if server is running.');
+    }
+  };
+
+  const handleTestTokenStorage = () => {
+    const success = testTokenStorage();
+    if (success) {
+      alert('✅ Token storage test passed!');
+    } else {
+      alert('❌ Token storage test failed!');
+    }
+  };
+
+  const handleSyncTokens = () => {
+    syncTokenWithLocalStorage();
   };
 
   // FAQ functionality
@@ -86,6 +114,34 @@ export const LandingPage = () => {
     <div className="bg-gray-100 text-gray-800 overflow-x-hidden min-w-0">
       {/* Shared Navbar */}
       <Navbar showNavigation={true} />
+
+      {/* Debug Button */}
+      <div className="fixed top-20 right-4 z-50">
+        <button
+          onClick={handleDebugToken}
+          className="px-3 py-2 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 shadow-lg"
+        >
+          🔍 Debug Token
+        </button>
+        <button
+          onClick={handleCheckBackend}
+          className="px-3 py-2 text-xs bg-green-500 text-white rounded hover:bg-green-600 shadow-lg ml-2"
+        >
+          💻 Backend Health
+        </button>
+        <button
+          onClick={handleTestTokenStorage}
+          className="px-3 py-2 text-xs bg-purple-500 text-white rounded hover:bg-purple-600 shadow-lg ml-2"
+        >
+          ⚙️ Test Token Storage
+        </button>
+        <button
+          onClick={handleSyncTokens}
+          className="px-3 py-2 text-xs bg-yellow-500 text-white rounded hover:bg-yellow-600 shadow-lg ml-2"
+        >
+          ⚙️ Sync Tokens
+        </button>
+      </div>
 
       {/* Hero Background */}
       <section className="relative bg-gradient-to-br from-[#dedff7] via-[#d6e8ec] to-white py-16">

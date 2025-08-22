@@ -45,7 +45,7 @@ export const PersonalInfoForm = () => {
           id="name"
           name="name"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(value) => setName(value)}
           className="mt-1 w-full"
           required
         />
@@ -59,7 +59,7 @@ export const PersonalInfoForm = () => {
           id="email"
           name="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(value) => setEmail(value)}
           className="mt-1 w-full"
           required
         />

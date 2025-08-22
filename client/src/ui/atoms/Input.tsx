@@ -2,29 +2,87 @@
 import React from 'react';
 
 // --- TextInput ---
-type TextInputProps = React.InputHTMLAttributes<HTMLInputElement>;
+interface TextInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label?: string;
+  onChange?: (value: string) => void;
+}
 
-export const TextInput = ({ className = '', ...props }: TextInputProps) => {
+export const TextInput = ({ 
+  className = '', 
+  label,
+  onChange,
+  value,
+  ...props 
+}: TextInputProps) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (onChange) {
+      onChange(e.target.value);
+    }
+  };
+
   return (
-    <input
-      type="text"
-      className={`border border-border rounded-card p-3 focus:outline-none focus:ring-2 focus:ring-primary ${className}`}
-      {...props}
-    />
+    <div>
+      {label && (
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          {label}
+        </label>
+      )}
+      <input
+        className={`w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${className}`}
+        value={value || ''}
+        onChange={handleChange}
+        {...props}
+      />
+    </div>
   );
 };
 
 // --- Select ---
-type SelectProps = React.SelectHTMLAttributes<HTMLSelectElement>;
+interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+  label?: string;
+  options?: Array<{ value: string; label: string }>;
+  onChange?: (value: string) => void;
+}
 
-export const Select = ({ className = '', children, ...props }: SelectProps) => {
+export const Select = ({ 
+  className = '', 
+  children, 
+  label,
+  options,
+  onChange,
+  value,
+  ...props 
+}: SelectProps) => {
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    if (onChange) {
+      onChange(e.target.value);
+    }
+  };
+
   return (
-    <select
-      className={`border border-border rounded-card p-3 focus:outline-none focus:ring-2 focus:ring-primary ${className}`}
-      {...props}
-    >
-      {children}
-    </select>
+    <div>
+      {label && (
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          {label}
+        </label>
+      )}
+      <select
+        className={`w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${className}`}
+        value={value || ''}
+        onChange={handleChange}
+        {...props}
+      >
+        {options ? (
+          options.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))
+        ) : (
+          children
+        )}
+      </select>
+    </div>
   );
 };
 

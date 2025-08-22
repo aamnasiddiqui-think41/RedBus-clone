@@ -24,7 +24,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
         <div className="mt-1 flex rounded-md shadow-sm">
           <Select
             value={countryCode}
-            onChange={(e) => setCountryCode(e.target.value)}
+            onChange={(value) => setCountryCode(value)}
             className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm"
           >
             <option value="+91">+91</option>
@@ -35,7 +35,7 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
             id="phone"
             name="phone"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            onChange={(value) => setPhone(value)}
             className="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border-gray-300"
             placeholder="Enter your phone number"
             required

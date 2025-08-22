@@ -66,19 +66,19 @@ export const SearchBar = () => {
 
   return (
     <form onSubmit={handleSubmit} className="flex items-center space-x-4 bg-white p-4 rounded-card shadow-md">
-      <Select value={fromCity} onChange={(e) => setFromCity(e.target.value)} required>
+      <Select value={fromCity} onChange={(value) => setFromCity(value)} required>
         <option value="" disabled>From</option>
         {cities.map((city) => (
           <option key={city.id} value={city.id}>{city.name}</option>
         ))}
       </Select>
-      <Select value={toCity} onChange={(e) => setToCity(e.target.value)} required>
+      <Select value={toCity} onChange={(value) => setToCity(value)} required>
         <option value="" disabled>To</option>
         {cities.map((city) => (
           <option key={city.id} value={city.id}>{city.name}</option>
         ))}
       </Select>
-      <TextInput type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+      <TextInput type="date" value={date} onChange={(value) => setDate(value)} />
       <Button type="submit" variant="primary">Search Buses</Button>
     </form>
   );

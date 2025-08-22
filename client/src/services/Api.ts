@@ -5,6 +5,22 @@ export interface User {
   name: string;
   phone: string;
   email: string;
+  gender?: string;
+  dob?: string;
+}
+
+export interface UserProfile {
+  id: string;
+  phone: string;
+  country_code: string;
+  name?: string;
+  email?: string;
+  gender?: string;
+  dob?: string;
+  total_bookings: number;
+  total_amount_spent: number;
+  wallet_balance: number;
+  personal_details_added: boolean;
 }
 
 export interface City {
@@ -64,8 +80,10 @@ export interface VerifyOtpRequest {
 }
 
 export interface UpdateMeRequest {
-  name: string;
-  email: string;
+  name?: string;
+  email?: string;
+  gender?: string;
+  dob?: string;
 }
 
 export interface SearchBusesRequest {
@@ -133,20 +151,42 @@ const API_BASE_URL = '/api';
 
 class ApiService {
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-    });
+    console.log('=== API: Making request to:', endpoint);
+    console.log('Request options:', options);
+    console.log('Full URL:', `${API_BASE_URL}${endpoint}`);
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+      });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.message || 'Something went wrong');
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
+      if (!response.ok) {
+        const error = await response.json();
+        console.log('Error response:', error);
+        throw new Error(error.message || 'Something went wrong');
+      }
+
+      const data = await response.json();
+      console.log('Success response:', data);
+      return data;
+    } catch (error) {
+      console.error('=== API: Request failed ===');
+      console.error('Endpoint:', endpoint);
+      console.error('Error:', error);
+      if (error instanceof Error) {
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+      }
+      throw error;
     }
-
-    return response.json();
   }
 
   // --- Auth ---
@@ -156,15 +196,21 @@ class ApiService {
   }
 
   verifyOtp(data: VerifyOtpRequest): Promise<VerifyOtpResponse> {
+    console.log('=== API: verifyOtp called ===');
+    console.log('Request data:', data);
     return this.request('/login/verify-otp', { method: 'POST', body: JSON.stringify(data) });
   }
 
   getMe(token: string): Promise<GetMeResponse> {
-    return this.request('/me', { headers: { Authorization: `Bearer ${token}` } });
+    return this.request('/me/', { headers: { Authorization: `Bearer ${token}` } });
+  }
+
+  getMyProfile(token: string): Promise<UserProfile> {
+    return this.request('/me/profile', { headers: { Authorization: `Bearer ${token}` } });
   }
 
   updateMe(token: string, data: UpdateMeRequest): Promise<UpdateMeResponse> {
-    return this.request('/me', { method: 'PUT', headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify(data) });
+    return this.request('/me/', { method: 'PUT', headers: { Authorization: `Bearer ${token}` }, body: JSON.stringify(data) });
   }
 
   // --- Bus Search & Booking ---

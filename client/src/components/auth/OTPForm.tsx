@@ -25,7 +25,7 @@ export const OTPForm = ({ onVerify }: OTPFormProps) => {
           id="otp"
           name="otp"
           value={otp}
-          onChange={(e) => setOtp(e.target.value)}
+          onChange={(value) => setOtp(value)}
           className="mt-1 w-full"
           placeholder="Enter the 6-digit OTP"
           required

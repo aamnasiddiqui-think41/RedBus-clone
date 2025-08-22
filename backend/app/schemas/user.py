@@ -23,3 +23,17 @@ class UserUpdate(BaseModel):
 class UserResponse(UserBase):
     id: uuid.UUID
     model_config = ConfigDict(from_attributes=True)
+
+class UserProfileResponse(BaseModel):
+    id: uuid.UUID
+    phone: str
+    country_code: str
+    name: Optional[str] = None
+    email: Optional[str] = None
+    gender: Optional[str] = None
+    dob: Optional[date] = None
+    total_bookings: int = 0
+    total_amount_spent: float = 0.0
+    wallet_balance: float = 0.0
+    personal_details_added: bool = False
+    model_config = ConfigDict(from_attributes=True)

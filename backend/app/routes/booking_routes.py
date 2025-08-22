@@ -38,6 +38,18 @@ def book_ticket(
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Booking failed: {str(e)}")
 
+@router.get("/debug", response_model=dict)
+def debug_auth(current_user: User = Depends(get_current_user)):
+    """
+    Simple debug endpoint to test authentication
+    """
+    return {
+        "message": "Authentication successful",
+        "user_id": str(current_user.id),
+        "user_phone": current_user.phone,
+        "user_name": current_user.name
+    }
+
 @router.get("/bookings", response_model=BookingListResponse)
 def get_my_bookings(
     db: Session = Depends(get_db), 
