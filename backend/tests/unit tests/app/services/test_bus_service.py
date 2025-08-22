@@ -2,6 +2,7 @@ import uuid
 from datetime import date
 
 from app.services.bus_service import BusService
+from app.schemas.bus import BusSearchRequest
 
 
 class DummySeat:
@@ -26,12 +27,34 @@ class DummyBookingSeat:
         self.seat_id = seat_id
 
 
+class DummyBus:
+    def __init__(self, id, operator, from_city_id, to_city_id, departure_time="09:00", arrival_time="18:00", duration="9h", fare=500.0, rating=4.5):
+        self.id = id
+        self.operator = operator
+        self.from_city_id = from_city_id
+        self.to_city_id = to_city_id
+        self.departure_time = departure_time
+        self.arrival_time = arrival_time
+        self.duration = duration
+        self.fare = fare
+        self.rating = rating
+
+
+class DummyTrip:
+    def __init__(self, id, bus_id, service_date, status="ACTIVE"):
+        self.id = id
+        self.bus_id = bus_id
+        self.service_date = service_date
+        self.status = status
+
+
 class DummyDB:
-    def __init__(self, seats=None, bookings=None, booking_seats=None, buses=None):
+    def __init__(self, seats=None, bookings=None, booking_seats=None, buses=None, trips=None):
         self._seats = seats or []
         self._bookings = bookings or []
         self._booking_seats = booking_seats or []
         self._buses = buses or []
+        self._trips = trips or []
         self.raise_on_query = False
 
     def query(self, model):
@@ -45,8 +68,12 @@ class DummyDB:
                 self.outer = outer
                 self.model = model
                 self._filter_args = None
+                self._joined_model = None
             def filter(self, *args, **kwargs):
                 self._filter_args = args
+                return self
+            def join(self, joined_model, *args, **kwargs):
+                self._joined_model = joined_model
                 return self
             def all(self):
                 if self.model.__name__ == 'Seat':
@@ -56,7 +83,14 @@ class DummyDB:
                 if self.model.__name__ == 'BookingSeat':
                     return self.outer._booking_seats
                 if self.model.__name__ == 'Bus':
+                    # For bus search with trip join, return buses that have matching trips
+                    if self._joined_model and self._joined_model.__name__ == 'Trip':
+                        # Simple mock: return buses that have trips
+                        bus_ids_with_trips = {trip.bus_id for trip in self.outer._trips}
+                        return [bus for bus in self.outer._buses if bus.id in bus_ids_with_trips]
                     return self.outer._buses
+                if self.model.__name__ == 'Trip':
+                    return self.outer._trips
                 return []
         return Q(self, model)
 
@@ -113,5 +147,72 @@ def test_get_seat_layout_db_failure_returns_empty():
     svc = BusService(db)
     res = svc.get_seat_layout(str(uuid.uuid4()), None)
     assert res['seats'] == []
+
+
+def test_search_buses_without_date_returns_all_route_buses():
+    from_city_id = uuid.uuid4()
+    to_city_id = uuid.uuid4()
+    bus1 = DummyBus(uuid.uuid4(), "ACME Travels", from_city_id, to_city_id)
+    bus2 = DummyBus(uuid.uuid4(), "Best Bus", from_city_id, to_city_id)
+    db = DummyDB(buses=[bus1, bus2])
+    svc = BusService(db)
+    
+    search_req = BusSearchRequest(from_city_id=from_city_id, to_city_id=to_city_id)
+    result = svc.search_buses(search_req)
+    
+    assert len(result) == 2
+    operators = [bus['operator'] for bus in result]
+    assert 'ACME Travels' in operators
+    assert 'Best Bus' in operators
+
+
+def test_search_buses_with_date_filters_by_trips():
+    from_city_id = uuid.uuid4()
+    to_city_id = uuid.uuid4()
+    bus1 = DummyBus(uuid.uuid4(), "ACME Travels", from_city_id, to_city_id)
+    bus2 = DummyBus(uuid.uuid4(), "Best Bus", from_city_id, to_city_id)
+    
+    # Only bus1 has a trip on the search date
+    trip1 = DummyTrip(uuid.uuid4(), bus1.id, date(2025, 1, 15))
+    
+    db = DummyDB(buses=[bus1, bus2], trips=[trip1])
+    svc = BusService(db)
+    
+    search_req = BusSearchRequest(from_city_id=from_city_id, to_city_id=to_city_id, travel_date=date(2025, 1, 15))
+    result = svc.search_buses(search_req)
+    
+    # Only bus1 should be returned since it has a trip on that date
+    assert len(result) == 1
+    assert result[0]['operator'] == 'ACME Travels'
+
+
+def test_search_buses_with_date_no_trips_returns_empty():
+    from_city_id = uuid.uuid4()
+    to_city_id = uuid.uuid4()
+    bus1 = DummyBus(uuid.uuid4(), "ACME Travels", from_city_id, to_city_id)
+    
+    # No trips for the search date
+    db = DummyDB(buses=[bus1], trips=[])
+    svc = BusService(db)
+    
+    search_req = BusSearchRequest(from_city_id=from_city_id, to_city_id=to_city_id, travel_date=date(2025, 1, 15))
+    result = svc.search_buses(search_req)
+    
+    # No buses should be returned since no trips on that date
+    assert len(result) == 0
+
+
+#edge case: search buses db error returns empty list gracefully
+def test_search_buses_db_error_returns_empty():
+    from_city_id = uuid.uuid4()
+    to_city_id = uuid.uuid4()
+    db = DummyDB()
+    db.raise_on_query = True
+    svc = BusService(db)
+    
+    search_req = BusSearchRequest(from_city_id=from_city_id, to_city_id=to_city_id)
+    result = svc.search_buses(search_req)
+    
+    assert result == []
 
 
