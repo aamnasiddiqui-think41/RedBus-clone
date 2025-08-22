@@ -20,11 +20,16 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-          Phone Number
-        </label>
+    <form onSubmit={handleSubmit} className="space-y-8">
+      <div className="mb-4">
+        <h2 className="text-2xl font-bold text-center mb-2">Login</h2>
+        <p className="text-sm text-gray-500 text-center mb-4">Enter your phone number to receive an OTP</p>
+        <div className="flex items-center justify-center mb-2">
+          <span className="inline-block mr-2 text-gray-400">
+            <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 10h8M8 14h6"/></svg>
+          </span>
+          <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone Number</label>
+        </div>
         <div className="mt-1 flex rounded-md shadow-sm">
           <select
             value={countryCode}
@@ -45,13 +50,13 @@ export const LoginForm = ({ onLogin }: LoginFormProps) => {
             required
           />
         </div>
-        {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+        {error && <p className="mt-1 text-xs text-red-600 text-center">{error}</p>}
       </div>
       <button
         type="submit"
-        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-base font-semibold text-white bg-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition"
       >
-        Send OTP
+        <span className="mr-2">🔒</span> Send OTP
       </button>
     </form>
   );
